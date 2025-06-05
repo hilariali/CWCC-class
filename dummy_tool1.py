@@ -36,36 +36,7 @@ def run():
     selected_model = st.selectbox("Choose a model:", model_options)
 
     # ----------------------------------------------------------------------------
-    # 4) Define function to send a message (with immediate rerun)
-    # ----------------------------------------------------------------------------
-    def send_message():
-        user_input = st.session_state.input_text.strip()
-        if not user_input:
-            return
-
-        # Append user message
-        st.session_state.chat_history.append({"role": "user", "content": user_input})
-
-        # Call the OpenAI API with the selected model
-        try:
-            response = st.session_state.client.chat.completions.create(
-                model=selected_model,
-                messages=st.session_state.chat_history,
-            )
-            assistant_msg = response.choices[0].message.content
-        except Exception as e:
-            assistant_msg = f"Error: {e}"
-
-        # Append AI’s response
-        st.session_state.chat_history.append(
-            {"role": "assistant", "content": assistant_msg}
-        )
-
-        # Immediately rerun so that the updated chat_history is displayed
-        st.experimental_rerun()
-
-    # ----------------------------------------------------------------------------
-    # 5) Display existing conversation
+    # 4) Display existing conversation (above the form)
     # ----------------------------------------------------------------------------
     for msg in st.session_state.chat_history:
         if msg["role"] == "user":
@@ -75,7 +46,7 @@ def run():
     st.markdown("---")
 
     # ----------------------------------------------------------------------------
-    # 6) Create a form with clear_on_submit=True so Enter/send works and input clears
+    # 5) Create a form so that pressing Enter submits and clears the input
     # ----------------------------------------------------------------------------
     if "input_text" not in st.session_state:
         st.session_state.input_text = ""
@@ -88,5 +59,27 @@ def run():
         )
         submitted = st.form_submit_button("Send")
         if submitted:
-            send_message()
-            # The form will clear "input_text" automatically because clear_on_submit=True
+            user_input = st.session_state.input_text.strip()
+            if user_input:
+                # 5a) Append the user's message
+                st.session_state.chat_history.append(
+                    {"role": "user", "content": user_input}
+                )
+
+                # 5b) Call the OpenAI API with the selected model
+                try:
+                    response = st.session_state.client.chat.completions.create(
+                        model=selected_model,
+                        messages=st.session_state.chat_history,
+                    )
+                    assistant_msg = response.choices[0].message.content
+                except Exception as e:
+                    assistant_msg = f"Error: {e}"
+
+                # 5c) Append the assistant's reply
+                st.session_state.chat_history.append(
+                    {"role": "assistant", "content": assistant_msg}
+                )
+            else:
+                st.warning("Please enter a message before sending.")
+            # The form will clear "input_text" automatically on rerun, because clear_on_submit=True
