@@ -72,7 +72,7 @@ def run():
             # 5b) Call the new OpenAI endpoint:
             try:
                 response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",  # or whatever model you prefer
+                    model="Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",  # or whatever model you prefer
                     messages=st.session_state.chat_history
                 )
                 assistant_msg = response.choices[0].message.content
