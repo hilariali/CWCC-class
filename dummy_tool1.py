@@ -36,7 +36,7 @@ def run():
     selected_model = st.selectbox("Choose a model:", model_options)
 
     # ----------------------------------------------------------------------------
-    # 4) Define function to send a message
+    # 4) Define function to send a message (with immediate rerun)
     # ----------------------------------------------------------------------------
     def send_message():
         user_input = st.session_state.input_text.strip()
@@ -57,9 +57,12 @@ def run():
             assistant_msg = f"Error: {e}"
 
         # Append AI’s response
-        st.session_state.chat_history.append({"role": "assistant", "content": assistant_msg})
+        st.session_state.chat_history.append(
+            {"role": "assistant", "content": assistant_msg}
+        )
 
-        # (No need to clear input_text manually; clear_on_submit=True will handle it.)
+        # Immediately rerun so that the updated chat_history is displayed
+        st.experimental_rerun()
 
     # ----------------------------------------------------------------------------
     # 5) Display existing conversation
@@ -86,4 +89,4 @@ def run():
         submitted = st.form_submit_button("Send")
         if submitted:
             send_message()
-            # The form will automatically clear the text area after submission
+            # The form will clear "input_text" automatically because clear_on_submit=True
