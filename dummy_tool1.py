@@ -10,30 +10,12 @@ def run():
     # ----------------------------------------------------------------------------
     # 1) Initialize the new OpenAI client (v1.0.0+)
     # ----------------------------------------------------------------------------
-    #
-    # If you want to use the default OpenAI endpoint, simply do:
-    #     client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-    #
-    # If you need to point at a custom base_url (e.g. chatapi.akash.network),
-    # you can do exactly as in your test snippet:
-    #
-    #     client = openai.OpenAI(
-    #         api_key=st.secrets["OPENAI_API_KEY"],
-    #         base_url="https://chatapi.akash.network/api/v1"
-    #     )
-    #
-    # (Uncomment whichever is appropriate below.)
-
-    # ——— Default OpenAI endpoint ———
-    client = openai.OpenAI(
-        api_key=st.secrets["OPENAI_API_KEY"]
-    )
-
-    # ——— Custom base_url endpoint (uncomment if you use a custom server) ———
-    # client = openai.OpenAI(
-    #     api_key=st.secrets["OPENAI_API_KEY"],
-    #     base_url="https://chatapi.akash.network/api/v1"
-    # )
+    if "client" not in st.session_state:
+        st.session_state.client = openai.OpenAI(
+            api_key=st.secrets["OPENAI_API_KEY"]
+            # If you need a custom endpoint, you can add:
+            # base_url="https://chatapi.akash.network/api/v1"
+        )
 
     # ----------------------------------------------------------------------------
     # 2) Initialize conversation history in session_state
@@ -44,44 +26,46 @@ def run():
         ]
 
     # ----------------------------------------------------------------------------
-    # 3) Display the existing conversation
+    # 3) Define callback to send a message
+    # ----------------------------------------------------------------------------
+    def send_message():
+        user_input = st.session_state.input_text.strip()
+        if not user_input:
+            return
+        # Append user message
+        st.session_state.chat_history.append({"role": "user", "content": user_input})
+        # Call the new OpenAI client API
+        try:
+            response = st.session_state.client.chat.completions.create(
+                model="Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
+                messages=st.session_state.chat_history,
+            )
+            assistant_msg = response.choices[0].message.content
+        except Exception as e:
+            assistant_msg = f"Error: {e}"
+        # Append AI’s response
+        st.session_state.chat_history.append({"role": "assistant", "content": assistant_msg})
+        # Clear the input box
+        st.session_state.input_text = ""
+
+    # ----------------------------------------------------------------------------
+    # 4) Display existing conversation
     # ----------------------------------------------------------------------------
     for msg in st.session_state.chat_history:
         if msg["role"] == "user":
             st.markdown(f"**You:** {msg['content']}")
         elif msg["role"] == "assistant":
             st.markdown(f"**AI:** {msg['content']}")
-
     st.markdown("---")
 
     # ----------------------------------------------------------------------------
-    # 4) Text input for the next user message
+    # 5) Ensure the input key exists and render text_input
     # ----------------------------------------------------------------------------
-    user_input = st.text_input("Your message:")
+    if "input_text" not in st.session_state:
+        st.session_state.input_text = ""
+    st.text_input("Your message:", key="input_text")
 
     # ----------------------------------------------------------------------------
-    # 5) When “Send” is clicked, append to history and call the new client API
+    # 6) “Send” button triggers the callback
     # ----------------------------------------------------------------------------
-    if st.button("Send"):
-        if not user_input:
-            st.warning("Please enter a message before sending.")
-        else:
-            # 5a) Append the user’s message to session state
-            st.session_state.chat_history.append({"role": "user", "content": user_input})
-
-            # 5b) Call the new OpenAI endpoint:
-            try:
-                response = client.chat.completions.create(
-                    model="Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",  # or whatever model you prefer
-                    messages=st.session_state.chat_history
-                )
-                assistant_msg = response.choices[0].message.content
-            except Exception as e:
-                assistant_msg = f"Error: {e}"
-
-            # 5c) Append the assistant’s reply to session state
-            st.session_state.chat_history.append(
-                {"role": "assistant", "content": assistant_msg}
-            )
-
-            # No need for explicit rerun; Streamlit automatically re-runs after a button click
+    st.button("Send", on_click=send_message)
