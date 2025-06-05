@@ -7,39 +7,45 @@ from docx import Document
 from pptx import Presentation
 import PyPDF2
 
+# Config
+MAX_FILES = 10
+MAX_CHAR_LIMIT = 400_000  # Safe buffer for 130k token limit
+
 def extract_text_from_file(file, file_type):
-    if file_type == "txt":
-        return file.read().decode("utf-8")
+    try:
+        if file_type == "txt":
+            return file.read().decode("utf-8")
 
-    elif file_type == "pdf":
-        reader = PyPDF2.PdfReader(file)
-        return "\n".join([page.extract_text() or "" for page in reader.pages])
+        elif file_type == "pdf":
+            reader = PyPDF2.PdfReader(file)
+            return "\n".join([page.extract_text() or "" for page in reader.pages])
 
-    elif file_type in ["doc", "docx"]:
-        doc = Document(file)
-        return "\n".join([para.text for para in doc.paragraphs])
+        elif file_type in ["doc", "docx"]:
+            doc = Document(file)
+            return "\n".join([para.text for para in doc.paragraphs])
 
-    elif file_type in ["ppt", "pptx"]:
-        prs = Presentation(file)
-        text = ""
-        for slide in prs.slides:
-            for shape in slide.shapes:
-                if hasattr(shape, "text"):
-                    text += shape.text + "\n"
-        return text.strip()
-
+        elif file_type in ["ppt", "pptx"]:
+            prs = Presentation(file)
+            text = ""
+            for slide in prs.slides:
+                for shape in slide.shapes:
+                    if hasattr(shape, "text"):
+                        text += shape.text + "\n"
+            return text.strip()
+    except Exception:
+        return ""
     return ""
 
 def run():
     st.title("📁 Chat with Your Files")
-    st.caption("Upload documents (TXT, PDF, DOCX, PPTX) and ask questions about them using AI.")
+    st.caption("Upload documents and chat with AI about their contents.")
 
     client = openai.OpenAI(
         api_key=st.secrets["OPENAI_API_KEY"],
         base_url=st.secrets.get("OPENAI_BASE_URL"),
     )
 
-    # Store session context
+    # Session state for context and chat
     if "file_context" not in st.session_state:
         st.session_state.file_context = ""
     if "chat_history" not in st.session_state:
@@ -48,28 +54,43 @@ def run():
         ]
 
     uploaded_files = st.file_uploader(
-        "Upload up to 10 files", type=["txt", "pdf", "doc", "docx", "ppt", "pptx"], accept_multiple_files=True
+        "Upload up to 10 files (TXT, PDF, DOCX, PPTX)", 
+        type=["txt", "pdf", "doc", "docx", "ppt", "pptx"],
+        accept_multiple_files=True
     )
 
     if uploaded_files:
-        if len(uploaded_files) > 10:
-            st.warning("⚠️ Please upload no more than 10 files.")
+        if len(uploaded_files) > MAX_FILES:
+            st.warning("⚠️ You can upload a maximum of 10 files.")
             return
 
         combined_text = ""
+        total_chars = 0
+
         for file in uploaded_files:
             ext = file.name.split(".")[-1].lower()
             content = extract_text_from_file(file, ext)
-            if content:
-                combined_text += f"\n\n--- {file.name} ---\n{content}"
-                st.success(f"✓ Extracted: {file.name}")
-            else:
-                st.error(f"Failed to extract text from: {file.name}")
+            if not content:
+                st.error(f"❌ Could not extract text from: {file.name}")
+                continue
+
+            content_len = len(content)
+            if total_chars + content_len > MAX_CHAR_LIMIT:
+                st.warning(f"⚠️ Skipping {file.name}: it would exceed the token limit.")
+                continue
+
+            combined_text += f"\n\n--- {file.name} ---\n{content}"
+            total_chars += content_len
+            st.success(f"✓ Extracted: {file.name} ({content_len:,} characters)")
 
         st.session_state.file_context = combined_text
-        st.subheader("📄 File Text Preview")
-        st.text_area("Combined Content (first 5000 characters)", value=combined_text[:5000], height=300)
+        st.info(f"🧮 Total characters extracted: {total_chars:,} (~{total_chars // 4:,} tokens)")
 
+        if combined_text:
+            st.subheader("📄 File Text Preview")
+            st.text_area("Combined file text (first 5000 characters shown):", value=combined_text[:5000], height=300)
+
+    # Model choice
     model_options = [
         "Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
         "DeepSeek-R1-0528",
@@ -79,25 +100,26 @@ def run():
 
     st.divider()
 
-    # Show chat history
+    # Display chat history
     for msg in st.session_state.chat_history:
         st.chat_message(msg["role"]).write(msg["content"])
 
-    # User prompt
-    user_input = st.chat_input("Ask something about the files…")
-    if user_input and st.session_state.file_context.strip():
+    user_input = st.chat_input("Ask something about the uploaded files…")
+    if user_input and not st.session_state.file_context:
+        st.warning("Please upload and process files before chatting.")
+    elif user_input:
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         st.chat_message("user").write(user_input)
 
         with st.spinner("Thinking..."):
             try:
-                # Combine file context with chat history
-                context_prompt = (
-                    f"You are an assistant that helps answer questions based on the following documents:\n\n"
-                    f"{st.session_state.file_context}\n\n"
-                    f"Now continue the conversation below."
+                system_prompt = (
+                    f"You are an assistant that answers questions based on the following uploaded documents:\n\n"
+                    f"{st.session_state.file_context[:MAX_CHAR_LIMIT]}\n\n"
+                    f"Now answer based on this information."
                 )
-                full_history = [{"role": "system", "content": context_prompt}] + st.session_state.chat_history
+                full_history = [{"role": "system", "content": system_prompt}] + st.session_state.chat_history
+
                 response = client.chat.completions.create(
                     model=selected_model,
                     messages=full_history,
@@ -106,6 +128,4 @@ def run():
                 st.session_state.chat_history.append({"role": "assistant", "content": reply})
                 st.chat_message("assistant").write(reply)
             except Exception as e:
-                st.error(f"Error: {e}")
-    elif user_input:
-        st.warning("Please upload files before chatting.")
+                st.error(f"❌ Error: {e}")
