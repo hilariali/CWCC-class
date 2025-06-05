@@ -5,7 +5,7 @@ import openai
 
 def run():
     st.title("🤖 AI Chatbot")
-
+    st.caption("🚀 Chat with an AI assistant powered by your secret API key.")
 
     # ----------------------------------------------------------------------------
     # 1) Initialize the OpenAI client using secret
@@ -24,7 +24,16 @@ def run():
         ]
 
     # ----------------------------------------------------------------------------
-    # 3) Model selection (fixed at top of page)
+    # 3) Clear Chat button
+    # ----------------------------------------------------------------------------
+    if st.button("🗑️ Clear Chat"):
+        # Reset to initial assistant greeting
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Hi there! How can I help you today?"}
+        ]
+
+    # ----------------------------------------------------------------------------
+    # 4) Model selection (fixed at top of page)
     # ----------------------------------------------------------------------------
     model_options = [
         "DeepSeek-R1-0528",
@@ -34,13 +43,13 @@ def run():
     selected_model = st.selectbox("Choose a model:", model_options)
 
     # ----------------------------------------------------------------------------
-    # 4) Display existing conversation using chat bubbles
+    # 5) Display existing conversation using chat bubbles
     # ----------------------------------------------------------------------------
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
     # ----------------------------------------------------------------------------
-    # 5) Handle new user input with st.chat_input()
+    # 6) Handle new user input with st.chat_input()
     # ----------------------------------------------------------------------------
     prompt = st.chat_input("Type your message...")
     if prompt:
