@@ -26,7 +26,17 @@ def run():
         ]
 
     # ----------------------------------------------------------------------------
-    # 3) Define function to send a message
+    # 3) Let the user pick a model
+    # ----------------------------------------------------------------------------
+    model_options = [
+        "DeepSeek-R1",
+        "Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
+        "Qwen3-235B-A22B-FP8",
+    ]
+    selected_model = st.selectbox("Choose a model:", model_options)
+
+    # ----------------------------------------------------------------------------
+    # 4) Define function to send a message
     # ----------------------------------------------------------------------------
     def send_message():
         user_input = st.session_state.input_text.strip()
@@ -36,10 +46,10 @@ def run():
         # Append user message
         st.session_state.chat_history.append({"role": "user", "content": user_input})
 
-        # Call the new OpenAI client API
+        # Call the OpenAI API with the selected model
         try:
             response = st.session_state.client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model=selected_model,
                 messages=st.session_state.chat_history,
             )
             assistant_msg = response.choices[0].message.content
@@ -53,7 +63,7 @@ def run():
         st.session_state.input_text = ""
 
     # ----------------------------------------------------------------------------
-    # 4) Display existing conversation
+    # 5) Display existing conversation
     # ----------------------------------------------------------------------------
     for msg in st.session_state.chat_history:
         if msg["role"] == "user":
@@ -63,7 +73,7 @@ def run():
     st.markdown("---")
 
     # ----------------------------------------------------------------------------
-    # 5) Create a form so that pressing Enter submits
+    # 6) Create a form so that pressing Enter submits
     # ----------------------------------------------------------------------------
     if "input_text" not in st.session_state:
         st.session_state.input_text = ""
