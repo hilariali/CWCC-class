@@ -4,29 +4,26 @@ import streamlit as st
 import openai
 
 def run():
-    st.header("🤖 AI Chatbot (Dummy Tool 1)")
-    st.write("Chat with an AI assistant powered by your OpenAI API key.")
+    st.title("🤖 AI Chatbot (Dummy Tool 1)")
+    st.caption("🚀 A Streamlit chatbot powered by your chosen LLM")
 
     # ----------------------------------------------------------------------------
-    # 1) Initialize the new OpenAI client (v1.0.0+)
+    # 1) Sidebar: Show API key field
     # ----------------------------------------------------------------------------
-    if "client" not in st.session_state:
-        st.session_state.client = openai.OpenAI(
-            api_key=st.secrets["OPENAI_API_KEY"]
-            # If you use a custom endpoint, uncomment & adjust below:
-            # base_url="https://chatapi.akash.network/api/v1"
+    with st.sidebar:
+        st.text_input(
+            "OpenAI API Key", 
+            key="chatbot_api_key", 
+            type="password", 
+            help="Enter your OpenAI API key (or a compatible endpoint key)."
+        )
+        st.write("[Get an OpenAI API key](https://platform.openai.com/account/api-keys)")
+        st.write(
+            "[View the source code](https://github.com/streamlit/llm-examples/blob/main/Chatbot.py)"
         )
 
     # ----------------------------------------------------------------------------
-    # 2) Initialize or retrieve conversation history
-    # ----------------------------------------------------------------------------
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = [
-            {"role": "system", "content": "You are a helpful assistant."}
-        ]
-
-    # ----------------------------------------------------------------------------
-    # 3) Model selection (always at the top)
+    # 2) Model selection (keep this at the top of main area)
     # ----------------------------------------------------------------------------
     model_options = [
         "DeepSeek-R1-0528",
@@ -36,68 +33,51 @@ def run():
     selected_model = st.selectbox("Choose a model:", model_options)
 
     # ----------------------------------------------------------------------------
-    # 4) Display conversation inside a scrollable container
+    # 3) Initialize conversation history in session_state
     # ----------------------------------------------------------------------------
-    st.markdown("---")
-    # Build HTML for all messages (excluding system prompt)
-    messages_html = ""
-    for msg in st.session_state.chat_history:
-        if msg["role"] == "user":
-            messages_html += f"<p style='margin:4px 0;'><strong>You:</strong> {msg['content']}</p>"
-        elif msg["role"] == "assistant":
-            messages_html += f"<p style='margin:4px 0;'><strong>AI:</strong> {msg['content']}</p>"
-
-    scrollable_div = f"""
-        <div style="
-            height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 8px;
-            background-color: #fafafa;
-        ">
-            {messages_html}
-        </div>
-    """
-
-    st.markdown(scrollable_div, unsafe_allow_html=True)
-    st.markdown("---")
+    if "messages" not in st.session_state:
+        # Start with a greeting from the assistant
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Hi there! How can I help you today?"}
+        ]
 
     # ----------------------------------------------------------------------------
-    # 5) Chat input form (at the bottom)
+    # 4) Display existing conversation using chat_message bubbles
     # ----------------------------------------------------------------------------
-    if "input_text" not in st.session_state:
-        st.session_state.input_text = ""
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
 
-    with st.form(key="chat_form", clear_on_submit=True):
-        user_input = st.text_area(
-            "Your message:",
-            key="input_text",
-            height=100,
-            placeholder="Type your message here..."
+    # ----------------------------------------------------------------------------
+    # 5) Handle new user input with st.chat_input()
+    # ----------------------------------------------------------------------------
+    prompt = st.chat_input("Type your message...")
+    if prompt:
+        if not st.session_state.chatbot_api_key:
+            st.info("🔑 Please add your OpenAI API key in the sidebar to continue.")
+            st.stop()
+
+        # Append the user's message
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.chat_message("user").write(prompt)
+
+        # Initialize the new OpenAI client (v1.0.0+)
+        client = openai.OpenAI(
+            api_key=st.session_state.chatbot_api_key
+            # If you have a custom endpoint, include base_url= here
+            # base_url="https://chatapi.akash.network/api/v1"
         )
-        submitted = st.form_submit_button("Send")
-        if submitted:
-            stripped = user_input.strip()
-            if stripped:
-                # Append user's message
-                st.session_state.chat_history.append(
-                    {"role": "user", "content": stripped}
-                )
 
-                # Call the OpenAI API with a spinner
-                with st.spinner("AI is thinking..."):
-                    try:
-                        response = st.session_state.client.chat.completions.create(
-                            model=selected_model,
-                            messages=st.session_state.chat_history,
-                        )
-                        assistant_msg = response.choices[0].message.content
-                    except Exception as e:
-                        assistant_msg = f"Error: {e}"
-
-                # Append assistant's reply
-                st.session_state.chat_history.append(
-                    {"role": "assistant", "content": assistant_msg}
+        # Call the API and show a spinner while waiting
+        with st.spinner("AI is thinking..."):
+            try:
+                response = client.chat.completions.create(
+                    model=selected_model,
+                    messages=st.session_state.messages,
                 )
-            else:
-                st.warning("Please enter a message before sending.")
+                assistant_msg = response.choices[0].message.content
+            except Exception as e:
+                assistant_msg = f"Error: {e}"
+
+        # Append and display the assistant's reply
+        st.session_state.messages.append({"role": "assistant", "content": assistant_msg})
+        st.chat_message("assistant").write(assistant_msg)
