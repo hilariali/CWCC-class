@@ -1,9 +1,6 @@
 # streamlit_app.py
 
 import streamlit as st
-from pathlib import Path
-
-# Import each tool’s “run” function
 from youtube_quiz import run as run_youtube_quiz
 from dummy_tool1 import run as run_dummy1
 from dummy_tool2 import run as run_dummy2
@@ -26,7 +23,7 @@ def render_navbar(current_page: str):
         "dummy2": "🛠 Dummy Tool 2",
     }
 
-    # Some minimal CSS to space out links
+    # Minimal CSS to space out links and highlight the active one
     st.markdown(
         """
         <style>
@@ -45,7 +42,7 @@ def render_navbar(current_page: str):
         unsafe_allow_html=True,
     )
 
-    # Build the clickable links
+    # Build the clickable links (no target="_blank", so open in the same tab)
     link_md = []
     for key, title in PAGES.items():
         if key == current_page:
@@ -62,7 +59,7 @@ def render_navbar(current_page: str):
 # ------------------------------------------------------------
 # 2) Detect which “page” we’re on via query params
 # ------------------------------------------------------------
-query_params = st.experimental_get_query_params()
+query_params = st.query_params
 current_page = query_params.get("page", ["home"])[0]
 
 # Sanity-check “current_page” against our known pages
