@@ -6,7 +6,7 @@ from youtube_quiz import run as run_youtube_quiz
 from dummy_tool1 import run as run_chatbot
 from dummy_tool2 import run as run_dummy2
 
-st.set_page_config(page_title="Multi‐Tool App", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="CWCC AI-Tool App", layout="wide", initial_sidebar_state="expanded")
 
 # ----------------------------------------------------------------------------
 # Sidebar Navigation with option_menu
@@ -46,7 +46,7 @@ with st.sidebar:
 # ----------------------------------------------------------------------------
 # Main Page Header
 # ----------------------------------------------------------------------------
-st.title("📋 Multi‐Tool Streamlit Hub")
+st.title("🔵🟡🔴 CWCC AI-Tool Hub")
 
 # ----------------------------------------------------------------------------
 # Page Routing
@@ -55,7 +55,7 @@ if selected == "Home":
     st.header("🏠 Home")
     st.write(
         """
-        Welcome to the Multi‐Tool Streamlit App! Use the sidebar to switch between:
+        Welcome to the CWCC AI-Tool Hub. Use the sidebar to switch between:
 
         - **YouTube Quiz Generator**: Paste a YouTube URL, fetch captions, summarize, and create a quiz.
         - **AI Chatbot**: Chat with an AI powered by your secret API key.
