@@ -36,50 +36,50 @@ def run():
     selected_model = st.selectbox("Choose a model:", model_options)
 
     # ----------------------------------------------------------------------------
-    # 4) Display existing conversation (above the form)
-    # ----------------------------------------------------------------------------
-    for msg in st.session_state.chat_history:
-        if msg["role"] == "user":
-            st.markdown(f"**You:** {msg['content']}")
-        elif msg["role"] == "assistant":
-            st.markdown(f"**AI:** {msg['content']}")
-    st.markdown("---")
-
-    # ----------------------------------------------------------------------------
-    # 5) Create a form so that pressing Enter submits and clears the input
+    # 4) Form: handle submission (Enter or Send) before showing chat
     # ----------------------------------------------------------------------------
     if "input_text" not in st.session_state:
         st.session_state.input_text = ""
 
     with st.form(key="chat_form", clear_on_submit=True):
-        st.text_area(
+        user_input = st.text_area(
             "Your message:",
             key="input_text",
             height=100,      # Larger height for easier multi-line input
         )
         submitted = st.form_submit_button("Send")
         if submitted:
-            user_input = st.session_state.input_text.strip()
-            if user_input:
-                # 5a) Append the user's message
+            stripped = user_input.strip()
+            if stripped:
+                # Append user's message
                 st.session_state.chat_history.append(
-                    {"role": "user", "content": user_input}
+                    {"role": "user", "content": stripped}
                 )
 
-                # 5b) Call the OpenAI API with the selected model
-                try:
-                    response = st.session_state.client.chat.completions.create(
-                        model=selected_model,
-                        messages=st.session_state.chat_history,
-                    )
-                    assistant_msg = response.choices[0].message.content
-                except Exception as e:
-                    assistant_msg = f"Error: {e}"
+                # Call the OpenAI API with spinner
+                with st.spinner("AI is thinking..."):
+                    try:
+                        response = st.session_state.client.chat.completions.create(
+                            model=selected_model,
+                            messages=st.session_state.chat_history,
+                        )
+                        assistant_msg = response.choices[0].message.content
+                    except Exception as e:
+                        assistant_msg = f"Error: {e}"
 
-                # 5c) Append the assistant's reply
+                # Append AI’s response
                 st.session_state.chat_history.append(
                     {"role": "assistant", "content": assistant_msg}
                 )
             else:
                 st.warning("Please enter a message before sending.")
-            # The form will clear "input_text" automatically on rerun, because clear_on_submit=True
+
+    # ----------------------------------------------------------------------------
+    # 5) Display updated conversation
+    # ----------------------------------------------------------------------------
+    st.markdown("---")
+    for msg in st.session_state.chat_history:
+        if msg["role"] == "user":
+            st.markdown(f"**You:** {msg['content']}")
+        elif msg["role"] == "assistant":
+            st.markdown(f"**AI:** {msg['content']}")
