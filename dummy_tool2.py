@@ -1,5 +1,3 @@
-# dummy_tool2.py
-
 import streamlit as st
 
 def run():
