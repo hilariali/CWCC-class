@@ -14,7 +14,7 @@ st.set_page_config(page_title="Multi-Tool Web App", layout="wide")
 def render_navbar(current_page: str):
     """
     Renders a simple horizontal nav bar with buttons that update ?page=…
-    in the same tab (via st.experimental_set_query_params).
+    in the same tab (via st.set_query_params).
     """
     PAGES = {
         "home": "🏠 Home",
@@ -31,7 +31,10 @@ def render_navbar(current_page: str):
         else:
             # Render a button for other pages
             if cols[idx].button(title, key=f"nav_btn_{key}"):
-                st.experimental_set_query_params(page=key)
+                # Use the non-experimental API to set query params
+                st.set_query_params(page=key)
+                # Immediately stop further rendering so Streamlit can rerun on new params
+                st.experimental_rerun()
 
     st.markdown("---")  # horizontal rule under the nav bar
 
@@ -41,6 +44,8 @@ def render_navbar(current_page: str):
 # ------------------------------------------------------------
 query_params = st.query_params
 current_page = query_params.get("page", ["home"])[0]
+
+# Sanity-check “current_page” against our known pages
 valid_pages = {"home", "youtube_quiz", "dummy1", "dummy2"}
 if current_page not in valid_pages:
     current_page = "home"
