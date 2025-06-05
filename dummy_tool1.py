@@ -13,7 +13,7 @@ def run():
     if "client" not in st.session_state:
         st.session_state.client = openai.OpenAI(
             api_key=st.secrets["OPENAI_API_KEY"]
-            # If you have a custom endpoint, uncomment & adjust below:
+            # If you use a custom endpoint, uncomment & adjust below:
             # base_url="https://chatapi.akash.network/api/v1"
         )
 
@@ -26,7 +26,7 @@ def run():
         ]
 
     # ----------------------------------------------------------------------------
-    # 3) Model selection (remains outside scrollable area)
+    # 3) Model selection (always at the top)
     # ----------------------------------------------------------------------------
     model_options = [
         "DeepSeek-R1-0528",
@@ -36,14 +36,40 @@ def run():
     selected_model = st.selectbox("Choose a model:", model_options)
 
     # ----------------------------------------------------------------------------
-    # 4) Handle form submission (Enter or Send)
+    # 4) Display conversation inside a scrollable container
+    # ----------------------------------------------------------------------------
+    st.markdown("---")
+    # Build HTML for all messages (excluding system prompt)
+    messages_html = ""
+    for msg in st.session_state.chat_history:
+        if msg["role"] == "user":
+            messages_html += f"<p style='margin:4px 0;'><strong>You:</strong> {msg['content']}</p>"
+        elif msg["role"] == "assistant":
+            messages_html += f"<p style='margin:4px 0;'><strong>AI:</strong> {msg['content']}</p>"
+
+    scrollable_div = f"""
+        <div style="
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 8px;
+            background-color: #fafafa;
+        ">
+            {messages_html}
+        </div>
+    """
+
+    st.markdown(scrollable_div, unsafe_allow_html=True)
+    st.markdown("---")
+
+    # ----------------------------------------------------------------------------
+    # 5) Chat input form (at the bottom)
     # ----------------------------------------------------------------------------
     if "input_text" not in st.session_state:
         st.session_state.input_text = ""
 
     with st.form(key="chat_form", clear_on_submit=True):
-        # Text area for user input at bottom
-        st.text_area(
+        user_input = st.text_area(
             "Your message:",
             key="input_text",
             height=100,
@@ -51,7 +77,7 @@ def run():
         )
         submitted = st.form_submit_button("Send")
         if submitted:
-            stripped = st.session_state.input_text.strip()
+            stripped = user_input.strip()
             if stripped:
                 # Append user's message
                 st.session_state.chat_history.append(
@@ -75,32 +101,3 @@ def run():
                 )
             else:
                 st.warning("Please enter a message before sending.")
-
-    # ----------------------------------------------------------------------------
-    # 5) Display conversation inside a scrollable container
-    # ----------------------------------------------------------------------------
-    st.markdown("---")
-    # Build HTML for all messages
-    messages_html = ""
-    for msg in st.session_state.chat_history:
-        if msg["role"] == "system":
-            # Skip system messages or show them in lighter text
-            continue
-        elif msg["role"] == "user":
-            messages_html += f"<p style='margin:4px 0;'><strong>You:</strong> {msg['content']}</p>"
-        elif msg["role"] == "assistant":
-            messages_html += f"<p style='margin:4px 0;'><strong>AI:</strong> {msg['content']}</p>"
-
-    scrollable_div = f"""
-        <div style="
-            height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 8px;
-            background-color: #fafafa;
-        ">
-            {messages_html}
-        </div>
-    """
-
-    st.markdown(scrollable_div, unsafe_allow_html=True)
