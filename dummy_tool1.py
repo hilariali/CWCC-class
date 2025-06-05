@@ -25,7 +25,7 @@ def run():
 
     st.markdown("---")
 
-    # Local variable for the new user message
+    # Local variable for the new user message; no session-state key
     user_input = st.text_input("Your message:")
 
     if st.button("Send"):
@@ -46,7 +46,6 @@ def run():
             # Append assistant response to history
             st.session_state.chat_history.append({"role": "assistant", "content": assistant_msg})
 
-            # Rerun to display updated history (input box will be blank on rerun)
-            st.experimental_rerun()
+            # No explicit rerun needed; clicking the button triggers a rerun automatically
         else:
             st.warning("Please enter a message before sending.")
