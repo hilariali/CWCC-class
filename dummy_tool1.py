@@ -10,7 +10,6 @@ def run():
         You can replace this with whatever functionality you need.
         """
     )
-    # Example input field
     user_input = st.text_input("Enter something (Dummy Tool 1):")
     if st.button("Process on Dummy Tool 1"):
         st.success(f"You typed: {user_input} (but nothing happens—this is just a dummy!).")
