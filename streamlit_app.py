@@ -38,7 +38,7 @@ with st.sidebar:
         """
         Created by: Hilaria Li
         Email: lhn@cwcc.edu.hk (mailto:lhn@cwcc.edu.hk)  
-        Feedback: [github.com/yourhandle](https://github.com/yourhandle)  
+        School: [Caritas Wu Cheng-chung College](https://www.cwcc.edu.hk/)  
         """,
         unsafe_allow_html=True,
     )
