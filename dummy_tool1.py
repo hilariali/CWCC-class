@@ -59,8 +59,7 @@ def run():
         # Append AI’s response
         st.session_state.chat_history.append({"role": "assistant", "content": assistant_msg})
 
-        # Clear the text area
-        st.session_state.input_text = ""
+        # (No need to clear input_text manually; clear_on_submit=True will handle it.)
 
     # ----------------------------------------------------------------------------
     # 5) Display existing conversation
@@ -73,12 +72,12 @@ def run():
     st.markdown("---")
 
     # ----------------------------------------------------------------------------
-    # 6) Create a form so that pressing Enter submits
+    # 6) Create a form with clear_on_submit=True so Enter/send works and input clears
     # ----------------------------------------------------------------------------
     if "input_text" not in st.session_state:
         st.session_state.input_text = ""
 
-    with st.form(key="chat_form", clear_on_submit=False):
+    with st.form(key="chat_form", clear_on_submit=True):
         st.text_area(
             "Your message:",
             key="input_text",
@@ -87,4 +86,4 @@ def run():
         submitted = st.form_submit_button("Send")
         if submitted:
             send_message()
-            # After send_message, the form will rerun and the text area will be cleared
+            # The form will automatically clear the text area after submission
