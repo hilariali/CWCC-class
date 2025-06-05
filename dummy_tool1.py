@@ -5,7 +5,7 @@ import openai
 
 def run():
     st.title("🤖 AI Chatbot")
-    st.caption("🚀 Chat with an AI assistant powered by your secret API key.")
+
 
     # ----------------------------------------------------------------------------
     # 1) Initialize the OpenAI client using secret
@@ -27,7 +27,7 @@ def run():
     # 3) Model selection (fixed at top of page)
     # ----------------------------------------------------------------------------
     model_options = [
-        "DeepSeek-R1",
+        "DeepSeek-R1-0528",
         "Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
         "Qwen3-235B-A22B-FP8",
     ]
