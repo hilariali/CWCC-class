@@ -28,28 +28,38 @@ def extract_text_from_file(file, file_type):
                     text += shape.text + "\n"
         return text.strip()
 
-    return None
+    return ""
 
 def run():
-    st.header("🧠 AI File Analyzer")
-    st.caption("Upload a file (PDF, DOCX, PPTX, TXT) and let AI analyze it.")
+    st.header("🧠 Multi-File AI Analyzer")
+    st.caption("Upload up to 10 files (TXT, PDF, DOCX, PPTX) and let AI analyze them together.")
 
     client = openai.OpenAI(
         api_key=st.secrets["OPENAI_API_KEY"],
         base_url=st.secrets.get("OPENAI_BASE_URL"),
     )
 
-    uploaded_file = st.file_uploader("Choose a file", type=["txt", "pdf", "doc", "docx", "ppt", "pptx"])
-    if uploaded_file is not None:
-        ext = uploaded_file.name.split(".")[-1].lower()
-        text = extract_text_from_file(uploaded_file, ext)
+    uploaded_files = st.file_uploader(
+        "Upload files", type=["txt", "pdf", "doc", "docx", "ppt", "pptx"], accept_multiple_files=True
+    )
 
-        if not text:
-            st.error("❌ Could not extract text from the uploaded file.")
+    if uploaded_files:
+        if len(uploaded_files) > 10:
+            st.warning("⚠️ You can upload up to 10 files.")
             return
 
-        st.subheader("📄 Extracted Text")
-        st.text_area("Text:", value=text[:5000], height=300)  # Preview first 5000 chars
+        full_text = ""
+        for file in uploaded_files:
+            ext = file.name.split(".")[-1].lower()
+            extracted = extract_text_from_file(file, ext)
+            if not extracted:
+                st.error(f"Could not extract text from {file.name}")
+                continue
+            st.success(f"✅ Extracted: {file.name}")
+            full_text += f"\n\n--- {file.name} ---\n\n{extracted}"
+
+        st.subheader("📄 Combined Extracted Text Preview")
+        st.text_area("Combined text (first 5000 characters):", value=full_text[:5000], height=300)
 
         model_options = [
             "Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
@@ -59,20 +69,19 @@ def run():
         selected_model = st.selectbox("Choose an AI model:", model_options)
 
         prompt_instruction = st.text_area(
-            "What do you want the AI to do with this content?",
-            value="Summarize the content.",
+            "What should the AI do with the content?",
+            value="Summarize all the files.",
             height=100,
         )
 
-        if st.button("Analyze"):
-            with st.spinner("Analyzing file..."):
+        if st.button("Analyze All Files"):
+            with st.spinner("Analyzing..."):
                 try:
                     response = client.chat.completions.create(
                         model=selected_model,
-                        messages=[{"role": "user", "content": f"{prompt_instruction}\n\n{text}"}],
+                        messages=[{"role": "user", "content": f"{prompt_instruction}\n\n{full_text}"}],
                     )
-                    output = response.choices[0].message.content
-                    st.subheader("🔍 AI Analysis")
-                    st.write(output)
+                    st.subheader("🔍 AI Analysis Result")
+                    st.write(response.choices[0].message.content)
                 except Exception as e:
                     st.error(f"Error: {e}")
