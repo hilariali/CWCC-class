@@ -13,12 +13,12 @@ def run():
     if "client" not in st.session_state:
         st.session_state.client = openai.OpenAI(
             api_key=st.secrets["OPENAI_API_KEY"]
-            # If you use a custom endpoint, uncomment and adjust below:
+            # If you have a custom endpoint, uncomment & adjust below:
             # base_url="https://chatapi.akash.network/api/v1"
         )
 
     # ----------------------------------------------------------------------------
-    # 2) Initialize conversation history in session_state
+    # 2) Initialize or retrieve conversation history
     # ----------------------------------------------------------------------------
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = [
@@ -26,7 +26,7 @@ def run():
         ]
 
     # ----------------------------------------------------------------------------
-    # 3) Let the user pick a model
+    # 3) Model selection (remains outside scrollable area)
     # ----------------------------------------------------------------------------
     model_options = [
         "DeepSeek-R1-0528",
@@ -36,27 +36,29 @@ def run():
     selected_model = st.selectbox("Choose a model:", model_options)
 
     # ----------------------------------------------------------------------------
-    # 4) Form: handle submission (Enter or Send) before showing chat
+    # 4) Handle form submission (Enter or Send)
     # ----------------------------------------------------------------------------
     if "input_text" not in st.session_state:
         st.session_state.input_text = ""
 
     with st.form(key="chat_form", clear_on_submit=True):
-        user_input = st.text_area(
+        # Text area for user input at bottom
+        st.text_area(
             "Your message:",
             key="input_text",
-            height=100,      # Larger height for easier multi-line input
+            height=100,
+            placeholder="Type your message here..."
         )
         submitted = st.form_submit_button("Send")
         if submitted:
-            stripped = user_input.strip()
+            stripped = st.session_state.input_text.strip()
             if stripped:
                 # Append user's message
                 st.session_state.chat_history.append(
                     {"role": "user", "content": stripped}
                 )
 
-                # Call the OpenAI API with spinner
+                # Call the OpenAI API with a spinner
                 with st.spinner("AI is thinking..."):
                     try:
                         response = st.session_state.client.chat.completions.create(
@@ -67,7 +69,7 @@ def run():
                     except Exception as e:
                         assistant_msg = f"Error: {e}"
 
-                # Append AI’s response
+                # Append assistant's reply
                 st.session_state.chat_history.append(
                     {"role": "assistant", "content": assistant_msg}
                 )
@@ -75,11 +77,30 @@ def run():
                 st.warning("Please enter a message before sending.")
 
     # ----------------------------------------------------------------------------
-    # 5) Display updated conversation
+    # 5) Display conversation inside a scrollable container
     # ----------------------------------------------------------------------------
     st.markdown("---")
+    # Build HTML for all messages
+    messages_html = ""
     for msg in st.session_state.chat_history:
-        if msg["role"] == "user":
-            st.markdown(f"**You:** {msg['content']}")
+        if msg["role"] == "system":
+            # Skip system messages or show them in lighter text
+            continue
+        elif msg["role"] == "user":
+            messages_html += f"<p style='margin:4px 0;'><strong>You:</strong> {msg['content']}</p>"
         elif msg["role"] == "assistant":
-            st.markdown(f"**AI:** {msg['content']}")
+            messages_html += f"<p style='margin:4px 0;'><strong>AI:</strong> {msg['content']}</p>"
+
+    scrollable_div = f"""
+        <div style="
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 8px;
+            background-color: #fafafa;
+        ">
+            {messages_html}
+        </div>
+    """
+
+    st.markdown(scrollable_div, unsafe_allow_html=True)
