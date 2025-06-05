@@ -1,5 +1,3 @@
-# streamlit_app.py
-
 import streamlit as st
 from youtube_quiz import run as run_youtube_quiz
 from dummy_tool1 import run as run_dummy1
