@@ -13,7 +13,7 @@ st.set_page_config(page_title="Multi‐Tool App", layout="wide", initial_sidebar
 # ----------------------------------------------------------------------------
 with st.sidebar:
     selected = option_menu(
-        menu_title="📂 Navigation",
+        menu_title="Menue",
         options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool"],
         icons=["house", "youtube", "robot", "file-earmark-text"],
         menu_icon="cast",
