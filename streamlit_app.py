@@ -1,6 +1,7 @@
 # streamlit_app.py
 
 import streamlit as st
+from streamlit_option_menu import option_menu
 from youtube_quiz import run as run_youtube_quiz
 from dummy_tool1 import run as run_chatbot
 from dummy_tool2 import run as run_dummy2
@@ -8,22 +9,49 @@ from dummy_tool2 import run as run_dummy2
 st.set_page_config(page_title="Multi‐Tool App", layout="wide", initial_sidebar_state="expanded")
 
 # ----------------------------------------------------------------------------
-# 1) Sidebar Navigation (toggleable by user)
+# Sidebar Navigation with option_menu
 # ----------------------------------------------------------------------------
 with st.sidebar:
-    st.title("Navigation")
-    page = st.radio(
-        "Go to:",
-        ["Home", "YouTube Quiz Generator", "AI Chatbot", "Dummy Tool 2"],
-        index=0,
+    selected = option_menu(
+        menu_title="📂 Navigation",
+        options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool"],
+        icons=["house", "youtube", "robot", "file-earmark-text"],
+        menu_icon="cast",
+        default_index=0,
+        styles={
+            "container": {"padding": "5px", "background-color": "#f0f2f6"},
+            "icon": {"color": "blue", "font-size": "18px"},
+            "nav-link": {
+                "font-size": "16px",
+                "text-align": "left",
+                "margin": "2px",
+                "--hover-color": "#eee",
+            },
+            "nav-link-selected": {"background-color": "#d0e6ff"},
+        },
+    )
+
+    # Developer Footer
+    st.markdown("---")
+    st.markdown("**👨‍💻 Developer Info**", unsafe_allow_html=True)
+    st.markdown(
+        """
+        Created by: **Your Name**  
+        Contact: [you@example.com](mailto:you@example.com)  
+        GitHub: [github.com/yourhandle](https://github.com/yourhandle)  
+        """,
+        unsafe_allow_html=True,
     )
 
 # ----------------------------------------------------------------------------
-# 2) Dispatch to selected page
+# Main Page Header
 # ----------------------------------------------------------------------------
 st.title("📋 Multi‐Tool Streamlit Hub")
 
-if page == "Home":
+# ----------------------------------------------------------------------------
+# Page Routing
+# ----------------------------------------------------------------------------
+if selected == "Home":
     st.header("🏠 Home")
     st.write(
         """
@@ -31,15 +59,15 @@ if page == "Home":
 
         - **YouTube Quiz Generator**: Paste a YouTube URL, fetch captions, summarize, and create a quiz.
         - **AI Chatbot**: Chat with an AI powered by your secret API key.
-        - **Dummy Tool 2**: A placeholder/demo.
+        - **File Chat Tool**: Upload documents and ask AI questions about them.
         """
     )
 
-elif page == "YouTube Quiz Generator":
+elif selected == "YouTube Quiz Generator":
     run_youtube_quiz()
 
-elif page == "AI Chatbot":
+elif selected == "AI Chatbot":
     run_chatbot()
 
-elif page == "Dummy Tool 2":
+elif selected == "File Chat Tool":
     run_dummy2()
