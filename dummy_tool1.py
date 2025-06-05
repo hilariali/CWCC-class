@@ -25,8 +25,8 @@ def run():
 
     st.markdown("---")
 
-    # Input area for new user message
-    user_input = st.text_input("Your message:", key="user_input")
+    # Local variable for the new user message
+    user_input = st.text_input("Your message:")
 
     if st.button("Send"):
         if user_input:
@@ -46,10 +46,7 @@ def run():
             # Append assistant response to history
             st.session_state.chat_history.append({"role": "assistant", "content": assistant_msg})
 
-            # Clear the input box (Streamlit re-runs, so resetting key works)
-            st.session_state.user_input = ""
-
-            # Rerun to display updated history
+            # Rerun to display updated history (input box will be blank on rerun)
             st.experimental_rerun()
         else:
             st.warning("Please enter a message before sending.")
