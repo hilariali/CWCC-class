@@ -13,7 +13,7 @@ def run():
     if "client" not in st.session_state:
         st.session_state.client = openai.OpenAI(
             api_key=st.secrets["OPENAI_API_KEY"]
-            # If you need a custom endpoint, you can add:
+            # If you use a custom endpoint, uncomment and adjust below:
             # base_url="https://chatapi.akash.network/api/v1"
         )
 
@@ -26,26 +26,30 @@ def run():
         ]
 
     # ----------------------------------------------------------------------------
-    # 3) Define callback to send a message
+    # 3) Define function to send a message
     # ----------------------------------------------------------------------------
     def send_message():
         user_input = st.session_state.input_text.strip()
         if not user_input:
             return
+
         # Append user message
         st.session_state.chat_history.append({"role": "user", "content": user_input})
+
         # Call the new OpenAI client API
         try:
             response = st.session_state.client.chat.completions.create(
-                model="Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
+                model="gpt-3.5-turbo",
                 messages=st.session_state.chat_history,
             )
             assistant_msg = response.choices[0].message.content
         except Exception as e:
             assistant_msg = f"Error: {e}"
+
         # Append AI’s response
         st.session_state.chat_history.append({"role": "assistant", "content": assistant_msg})
-        # Clear the input box
+
+        # Clear the text area
         st.session_state.input_text = ""
 
     # ----------------------------------------------------------------------------
@@ -59,13 +63,18 @@ def run():
     st.markdown("---")
 
     # ----------------------------------------------------------------------------
-    # 5) Ensure the input key exists and render text_input
+    # 5) Create a form so that pressing Enter submits
     # ----------------------------------------------------------------------------
     if "input_text" not in st.session_state:
         st.session_state.input_text = ""
-    st.text_input("Your message:", key="input_text")
 
-    # ----------------------------------------------------------------------------
-    # 6) “Send” button triggers the callback
-    # ----------------------------------------------------------------------------
-    st.button("Send", on_click=send_message)
+    with st.form(key="chat_form", clear_on_submit=False):
+        st.text_area(
+            "Your message:",
+            key="input_text",
+            height=100,      # Larger height for easier multi-line input
+        )
+        submitted = st.form_submit_button("Send")
+        if submitted:
+            send_message()
+            # After send_message, the form will rerun and the text area will be cleared
