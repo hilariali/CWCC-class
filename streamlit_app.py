@@ -36,9 +36,9 @@ with st.sidebar:
     st.markdown("**👨‍💻 Developer Info**", unsafe_allow_html=True)
     st.markdown(
         """
-        Created by: **Your Name**  
-        Contact: [you@example.com](mailto:you@example.com)  
-        GitHub: [github.com/yourhandle](https://github.com/yourhandle)  
+        Created by: Hilaria Li
+        Email: lhn@cwcc.edu.hk (mailto:lhn@cwcc.edu.hk)  
+        Feedback: [github.com/yourhandle](https://github.com/yourhandle)  
         """,
         unsafe_allow_html=True,
     )
