@@ -10,7 +10,6 @@ def run():
         Feel free to hook in any logic here in future.
         """
     )
-    # Example checkbox
     chk = st.checkbox("Click me! (Dummy Tool 2)")
     if chk:
         st.info("Checkbox selected, but there's no real logic behind it—just a demo.")
