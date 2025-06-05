@@ -29,7 +29,7 @@ def run():
     # 3) Let the user pick a model
     # ----------------------------------------------------------------------------
     model_options = [
-        "DeepSeek-R1",
+        "DeepSeek-R1-0528",
         "Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
         "Qwen3-235B-A22B-FP8",
     ]
