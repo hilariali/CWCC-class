@@ -10,6 +10,7 @@ from website_summarizer import run as run_website_summarizer
 from streamlit.components.v1 import html
 
 
+
 def collapse_sidebar():
     """Trigger sidebar collapse via JavaScript."""
     html(
@@ -21,6 +22,7 @@ def collapse_sidebar():
         """,
         height=0,
     )
+
 
 
 if "sidebar_closed" not in st.session_state:
@@ -64,7 +66,16 @@ with st.sidebar:
     if selected != st.session_state.current_menu:
         st.session_state.current_menu = selected
         st.session_state.sidebar_closed = selected != "Home"
+
         st.rerun()
+
+
+
+        st.rerun()
+
+        st.experimental_rerun()
+
+
 
     # Developer Footer
     st.markdown("---")
@@ -83,7 +94,7 @@ with st.sidebar:
     # ----------------------------------------------------------------------------
     # (Replace the URLs below with your actual LinkedIn and GitHub profiles)
     linked_in_url = "https://www.linkedin.com/in/hilariali/"
-    github_url = "https://github.com/trill01/"
+    github_url = "https://github.com/hilariali/"
     sidebar_footer = f"""
     <div style="position: absolute; bottom: 10px; width: 100%; text-align: center;">
     <br>
