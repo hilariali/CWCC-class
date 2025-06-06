@@ -50,7 +50,11 @@ with st.sidebar:
     if selected != st.session_state.current_menu:
         st.session_state.current_menu = selected
         st.session_state.sidebar_closed = selected != "Home"
+
+        st.rerun()
+
         st.experimental_rerun()
+
 
     # Developer Footer
     st.markdown("---")
