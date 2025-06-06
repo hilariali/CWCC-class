@@ -5,7 +5,10 @@ from bs4 import BeautifulSoup
 import traceback
 
 client = None
+
 MAX_CONTEXT = 100000
+
+
 
 CHUNK_SIZE = 100000
 
@@ -50,8 +53,10 @@ def run():
     url = st.text_input("Website URL:")
     lang = st.text_input("Language for summary:", value="English")
 
+
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
+
     if st.button("Summarize"):
         if not url.strip():
             st.warning("Please enter a URL.")
@@ -64,6 +69,7 @@ def run():
         with st.spinner("Summarizing…"):
             summary = summarize_text(text, lang.strip() or "English")
         if summary:
+
             st.session_state.page_text = text
             st.session_state.summary = summary
             st.session_state.chat_history = [
@@ -112,3 +118,7 @@ def run():
 
             st.session_state.chat_history.append({"role": "assistant", "content": reply})
             st.chat_message("assistant").write(reply)
+
+            st.subheader("Summary")
+            st.write(summary)
+
