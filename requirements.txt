@@ -8,5 +8,5 @@ python-pptx
 python-docx
 PyPDF2
 streamlit-option-menu
+beautifulsoup4
 bs4
-

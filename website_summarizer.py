@@ -6,6 +6,10 @@ import traceback
 
 client = None
 
+MAX_CONTEXT = 100000
+
+
+
 CHUNK_SIZE = 100000
 
 def fetch_page_text(url: str) -> str:
@@ -49,6 +53,10 @@ def run():
     url = st.text_input("Website URL:")
     lang = st.text_input("Language for summary:", value="English")
 
+
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
     if st.button("Summarize"):
         if not url.strip():
             st.warning("Please enter a URL.")
@@ -61,5 +69,56 @@ def run():
         with st.spinner("Summarizing…"):
             summary = summarize_text(text, lang.strip() or "English")
         if summary:
+
+            st.session_state.page_text = text
+            st.session_state.summary = summary
+            st.session_state.chat_history = [
+                {
+                    "role": "assistant",
+                    "content": "Hi! Ask me questions about this webpage.",
+                }
+            ]
             st.subheader("Summary")
             st.write(summary)
+
+    if "summary" in st.session_state:
+        st.subheader("Chat About the Page")
+        if st.button("🗑️ Clear Chat"):
+            st.session_state.chat_history = [
+                {
+                    "role": "assistant",
+                    "content": "Hi! Ask me questions about this webpage.",
+                }
+            ]
+
+        for msg in st.session_state.chat_history:
+            st.chat_message(msg["role"]).write(msg["content"])
+
+        user_input = st.chat_input("Your question about the page…")
+        if user_input:
+            st.session_state.chat_history.append({"role": "user", "content": user_input})
+            st.chat_message("user").write(user_input)
+
+            system_prompt = (
+                "You are an assistant answering questions based solely on the provided webpage text. "
+                "If the answer is not contained in the text or you are uncertain, say you do not know and suggest verifying."
+            )
+            context = st.session_state.page_text[:MAX_CONTEXT]
+            messages = [{"role": "system", "content": system_prompt + "\n\n" + context}] + st.session_state.chat_history
+
+            with st.spinner("Thinking…"):
+                try:
+                    resp = client.chat.completions.create(
+                        model="Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
+                        messages=messages,
+                    )
+                    reply = resp.choices[0].message.content
+                except Exception as e:
+                    reply = f"Error: {e}"
+
+            st.session_state.chat_history.append({"role": "assistant", "content": reply})
+            st.chat_message("assistant").write(reply)
+
+            st.subheader("Summary")
+            st.write(summary)
+
