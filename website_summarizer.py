@@ -79,7 +79,7 @@ def run():
                 }
             ]
             st.subheader("Summary")
-            st.write(summary)
+            st.write(st.session_state.summary)
 
     if "summary" in st.session_state:
         st.subheader("Chat About the Page")
@@ -120,5 +120,5 @@ def run():
             st.chat_message("assistant").write(reply)
 
             st.subheader("Summary")
-            st.write(summary)
+            st.write(st.session_state.summary)
 
