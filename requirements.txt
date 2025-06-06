@@ -8,3 +8,5 @@ python-pptx
 python-docx
 PyPDF2
 streamlit-option-menu
+bs4
+traceback
