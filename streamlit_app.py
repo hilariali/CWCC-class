@@ -5,6 +5,7 @@ from streamlit_option_menu import option_menu
 from youtube_quiz import run as run_youtube_quiz
 from dummy_tool1 import run as run_chatbot
 from dummy_tool2 import run as run_dummy2
+from website_summarizer import run as run_website_summarizer
 
 st.set_page_config(page_title="CWCC AI-Tool App", layout="wide", initial_sidebar_state="expanded")
 
@@ -14,7 +15,7 @@ st.set_page_config(page_title="CWCC AI-Tool App", layout="wide", initial_sidebar
 with st.sidebar:
     selected = option_menu(
         menu_title="Menue",
-        options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool"],
+        options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool" , "Web Summarizer"],
         icons=["house", "youtube", "robot", "file-earmark-text"],
         default_index=0,
         styles={
@@ -78,6 +79,7 @@ if selected == "Home":
         - **YouTube Quiz Generator**: Paste a YouTube URL, fetch captions, summarize, and create a quiz.
         - **AI Chatbot**: Chat with an AI powered by your secret API key.
         - **File Chat Tool**: Upload documents and ask AI questions about them.
+        -**Web Summarizer**: Input a web url, get the summary of webpage content.
         """
     )
     st.write(
@@ -95,3 +97,5 @@ elif selected == "AI Chatbot":
 
 elif selected == "File Chat Tool":
     run_dummy2()
+elif selected == "Web Summarizer":
+    run_website_summarizer()
