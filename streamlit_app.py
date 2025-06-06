@@ -7,6 +7,22 @@ from dummy_tool1 import run as run_chatbot
 from dummy_tool2 import run as run_dummy2
 from website_summarizer import run as run_web_summarizer
 from website_summarizer import run as run_website_summarizer
+from streamlit.components.v1 import html
+
+
+
+def collapse_sidebar():
+    """Trigger sidebar collapse via JavaScript."""
+    html(
+        """
+        <script>
+        const btn = window.parent.document.querySelector('button[title="Collapse sidebar"], button[data-testid="collapse-control"]');
+        if (btn) { btn.click(); }
+        </script>
+        """,
+        height=0,
+    )
+
 
 
 if "sidebar_closed" not in st.session_state:
@@ -53,7 +69,12 @@ with st.sidebar:
 
         st.rerun()
 
+
+
+        st.rerun()
+
         st.experimental_rerun()
+
 
 
     # Developer Footer
@@ -129,4 +150,7 @@ elif selected == "Website Summarizer":
 
 elif selected == "Web Summarizer":
     run_website_summarizer()
+
+if st.session_state.sidebar_closed:
+    collapse_sidebar()
 
