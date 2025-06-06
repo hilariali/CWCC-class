@@ -18,13 +18,6 @@ with st.sidebar:
     selected = option_menu(
         menu_title="Menue",
 
-        options=[
-            "Home",
-            "YouTube Quiz Generator",
-            "AI Chatbot",
-            "File Chat Tool",
-            "Website Summarizer",
-        ],
         icons=["house", "youtube", "robot", "file-earmark-text", "globe"],
 
         options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool" , "Web Summarizer"],
