@@ -16,7 +16,6 @@ with st.sidebar:
         menu_title="Menue",
         options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool"],
         icons=["house", "youtube", "robot", "file-earmark-text"],
-        menu_icon="cast",
         default_index=0,
         styles={
             "container": {"padding": "5px", "background-color": "#f0f2f6"},
