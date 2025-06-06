@@ -63,8 +63,8 @@ if selected == "Home":
     )
     st.write(
         """
-        - **[Feedback Form]**(https://forms.office.com/r/VLpSiCv5qP)
-
+        **Feedback Form**(https://forms.office.com/r/VLpSiCv5qP)
+        **Wish Collection Form**(https://forms.office.com/r/DWBkQ91LL8)
         """
     )
 
