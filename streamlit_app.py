@@ -9,7 +9,18 @@ from website_summarizer import run as run_web_summarizer
 from website_summarizer import run as run_website_summarizer
 
 
-st.set_page_config(page_title="CWCC AI-Tool App", layout="wide", initial_sidebar_state="expanded")
+if "sidebar_closed" not in st.session_state:
+    st.session_state.sidebar_closed = False
+if "current_menu" not in st.session_state:
+    st.session_state.current_menu = "Home"
+
+sidebar_state = "collapsed" if st.session_state.sidebar_closed else "expanded"
+
+st.set_page_config(
+    page_title="CWCC AI-Tool App",
+    layout="wide",
+    initial_sidebar_state=sidebar_state,
+)
 
 # ----------------------------------------------------------------------------
 # Sidebar Navigation with option_menu
@@ -35,6 +46,11 @@ with st.sidebar:
             "nav-link-selected": {"background-color": "#d0e6ff"},
         },
     )
+
+    if selected != st.session_state.current_menu:
+        st.session_state.current_menu = selected
+        st.session_state.sidebar_closed = selected != "Home"
+        st.rerun()
 
     # Developer Footer
     st.markdown("---")
