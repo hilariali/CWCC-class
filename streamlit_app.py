@@ -41,6 +41,24 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
+     st.markdown("---")
+    # ----------------------------------------------------------------------------
+    # 2) Social icons at the bottom of the sidebar
+    # ----------------------------------------------------------------------------
+    # (Replace the URLs below with your actual LinkedIn and GitHub profiles)
+    linked_in_url = "https://www.linkedin.com/in/hilariali/"
+    github_url = "https://github.com/trill01/"
+    sidebar_footer = f"""
+    <div style="position: absolute; bottom: 10px; width: 100%; text-align: center;">
+      <a href="{linked_in_url}" target="_blank" style="margin-right: 12px;">
+        <img src="https://cdn-icons-png.flaticon.com/24/174/174857.png" alt="LinkedIn" />
+      </a>
+      <a href="{github_url}" target="_blank">
+        <img src="https://cdn-icons-png.flaticon.com/24/733/733553.png" alt="GitHub" />
+      </a>
+    </div>
+    """
+    st.markdown(sidebar_footer, unsafe_allow_html=True)
 
 # ----------------------------------------------------------------------------
 # Main Page Header
