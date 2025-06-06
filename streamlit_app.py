@@ -7,9 +7,34 @@ from dummy_tool1 import run as run_chatbot
 from dummy_tool2 import run as run_dummy2
 from website_summarizer import run as run_web_summarizer
 from website_summarizer import run as run_website_summarizer
+from streamlit.components.v1 import html
 
 
-st.set_page_config(page_title="CWCC AI-Tool App", layout="wide", initial_sidebar_state="expanded")
+def collapse_sidebar():
+    """Trigger sidebar collapse via JavaScript."""
+    html(
+        """
+        <script>
+        const btn = window.parent.document.querySelector('button[title="Collapse sidebar"], button[data-testid="collapse-control"]');
+        if (btn) { btn.click(); }
+        </script>
+        """,
+        height=0,
+    )
+
+
+if "sidebar_closed" not in st.session_state:
+    st.session_state.sidebar_closed = False
+if "current_menu" not in st.session_state:
+    st.session_state.current_menu = "Home"
+
+sidebar_state = "collapsed" if st.session_state.sidebar_closed else "expanded"
+
+st.set_page_config(
+    page_title="CWCC AI-Tool App",
+    layout="wide",
+    initial_sidebar_state=sidebar_state,
+)
 
 # ----------------------------------------------------------------------------
 # Sidebar Navigation with option_menu
@@ -35,6 +60,11 @@ with st.sidebar:
             "nav-link-selected": {"background-color": "#d0e6ff"},
         },
     )
+
+    if selected != st.session_state.current_menu:
+        st.session_state.current_menu = selected
+        st.session_state.sidebar_closed = selected != "Home"
+        st.rerun()
 
     # Developer Footer
     st.markdown("---")
@@ -109,4 +139,7 @@ elif selected == "Website Summarizer":
 
 elif selected == "Web Summarizer":
     run_website_summarizer()
+
+if st.session_state.sidebar_closed:
+    collapse_sidebar()
 
