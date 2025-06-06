@@ -21,8 +21,11 @@ def fetch_page_text(url: str) -> str:
     except Exception:
         return ""
 
-def summarize_chunk(text: str, lang: str) -> str:
-    prompt = f"Please summarize the following webpage text in {lang}:\n\n{text}"
+def summarize_chunk(text: str) -> str:
+    prompt = (
+        "Please summarize the following webpage text in the same language as "
+        f"the text:\n\n{text}"
+    )
     try:
         resp = client.chat.completions.create(
             model="Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
@@ -34,13 +37,13 @@ def summarize_chunk(text: str, lang: str) -> str:
         st.text(traceback.format_exc())
         return ""
 
-def summarize_text(text: str, lang: str) -> str:
+def summarize_text(text: str) -> str:
     if len(text) <= CHUNK_SIZE:
-        return summarize_chunk(text, lang)
+        return summarize_chunk(text)
     parts = []
     for i in range(0, len(text), CHUNK_SIZE):
-        parts.append(summarize_chunk(text[i : i + CHUNK_SIZE], lang))
-    return summarize_chunk("\n".join(parts), lang)
+        parts.append(summarize_chunk(text[i : i + CHUNK_SIZE]))
+    return summarize_chunk("\n".join(parts))
 
 def run():
     global client
@@ -51,7 +54,6 @@ def run():
 
     st.header("\U0001F310 Webpage Summarizer")
     url = st.text_input("Website URL:")
-    lang = st.text_input("Language for summary:", value="English")
 
 
     if "chat_history" not in st.session_state:
@@ -67,7 +69,7 @@ def run():
             st.error("Failed to fetch or parse the webpage.")
             return
         with st.spinner("Summarizing…"):
-            summary = summarize_text(text, lang.strip() or "English")
+            summary = summarize_text(text)
         if summary:
 
             st.session_state.page_text = text
@@ -79,7 +81,7 @@ def run():
                 }
             ]
             st.subheader("Summary")
-            st.write(summary)
+            st.write(st.session_state.summary)
 
     if "summary" in st.session_state:
         st.subheader("Chat About the Page")
@@ -120,5 +122,5 @@ def run():
             st.chat_message("assistant").write(reply)
 
             st.subheader("Summary")
-            st.write(summary)
+            st.write(st.session_state.summary)
 
