@@ -50,6 +50,7 @@ with st.sidebar:
     github_url = "https://github.com/trill01/"
     sidebar_footer = f"""
     <div style="position: absolute; bottom: 10px; width: 100%; text-align: center;">
+    <br>
       <a href="{linked_in_url}" target="_blank" style="margin-right: 12px;">
         <img src="https://cdn-icons-png.flaticon.com/24/174/174857.png" alt="LinkedIn" />
       </a>
