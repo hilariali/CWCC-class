@@ -21,7 +21,6 @@ with st.sidebar:
         icons=["house", "youtube", "robot", "file-earmark-text", "globe"],
 
         options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool" , "Web Summarizer"],
-        icons=["house", "youtube", "robot", "file-earmark-text"],
 
         default_index=0,
         styles={
