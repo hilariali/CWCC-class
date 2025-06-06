@@ -36,8 +36,9 @@ with st.sidebar:
     st.markdown("**👨‍💻 Developer Info**", unsafe_allow_html=True)
     st.markdown(
         """
-        Created by: Hilaria Li\nEmail: [lhn@cwcc.edu.hk](mailto:lhn@cwcc.edu.hk)  
-        School: [Caritas Wu Cheng-chung College](https://www.cwcc.edu.hk/)  
+        Created by: Hilaria Li
+        \nEmail: [lhn@cwcc.edu.hk](mailto:lhn@cwcc.edu.hk)  
+        \nSchool: [Caritas Wu Cheng-chung College](https://www.cwcc.edu.hk/)  
         """,
         unsafe_allow_html=True,
     )
