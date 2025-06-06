@@ -37,7 +37,7 @@ with st.sidebar:
     st.markdown(
         """
         Created by: Hilaria Li
-        Email: lhn@cwcc.edu.hk(mailto:lhn@cwcc.edu.hk)  
+        Email: [lhn@cwcc.edu.hk](mailto:lhn@cwcc.edu.hk)  
         School: [Caritas Wu Cheng-chung College](https://www.cwcc.edu.hk/)  
         """,
         unsafe_allow_html=True,
