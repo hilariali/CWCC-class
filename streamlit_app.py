@@ -53,7 +53,7 @@ with st.sidebar:
     # ----------------------------------------------------------------------------
     # (Replace the URLs below with your actual LinkedIn and GitHub profiles)
     linked_in_url = "https://www.linkedin.com/in/hilariali/"
-    github_url = "https://github.com/trill01/"
+    github_url = "https://github.com/hilariali/"
     sidebar_footer = f"""
     <div style="position: absolute; bottom: 10px; width: 100%; text-align: center;">
     <br>
