@@ -61,6 +61,12 @@ if selected == "Home":
         - **File Chat Tool**: Upload documents and ask AI questions about them.
         """
     )
+    st.write(
+        """
+        - **[Feedback Form]**(https://forms.office.com/r/VLpSiCv5qP)
+
+        """
+    )
 
 elif selected == "YouTube Quiz Generator":
     run_youtube_quiz()
