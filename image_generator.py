@@ -43,14 +43,14 @@ def run():
     st.title("🤖 AI Image Generator")
     st.caption("Chat with an AI assistant to generate creative images.")
 
-    # Initialize state
+    # Initialize session state
     if "messages" not in st.session_state:
         st.session_state.messages = [
             {"role": "system", "content": PREPROMPT},
             {"role": "assistant", "content": "Hi there! Tell me what image you'd like to create."}
         ]
 
-    # Clear chat
+    # Clear Chat button
     if st.button("🗑️ Clear Chat", key="clear"):
         st.session_state.messages = [
             {"role": "system", "content": PREPROMPT},
@@ -61,22 +61,20 @@ def run():
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
-    # ---- User Input ----
+    # User prompt input
     prompt = st.chat_input("Type your image prompt...")
     if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.chat_message("user").write(prompt)
 
-        # Advanced options hidden in expander
+        # Optional settings in expander
         with st.expander("Advanced Settings (optional)"):
-            # Model selection
             model = st.radio(
                 "Choose model:",
                 ["flux", "flux-realism", "any-dark", "flux-anime", "flux-3d", "turbo"],
                 index=0
             )
 
-            # Aspect ratio presets
             aspect = st.radio(
                 "Image size:",
                 ["Square (1024x1024)", "Portrait (768x1024)", "Landscape (1024x768)"],
@@ -89,14 +87,11 @@ def run():
             }
             width, height = size_map[aspect]
 
-            # Seed
             use_seed = st.checkbox("Specify seed (for reproducible results)")
-            if use_seed:
-                seed = st.number_input("Seed value:", min_value=0, max_value=2**32-1, value=0)
-            else:
-                seed = None
+            seed = st.number_input(
+                "Seed value:", min_value=0, max_value=2**32-1, value=0
+            ) if use_seed else None
 
-            # Disable logo
             nologo = st.checkbox("Disable logo on output", value=True)
 
         # Call OpenAI API
