@@ -26,87 +26,96 @@ You are an image generator. The user provides a prompt. Please infer the followi
 ## Default params:
 - prompt (required): The text description of the image you want to generate.
 - model (optional): The model to use for generation. Options: 'flux', 'flux-realism', 'any-dark', 'flux-anime', 'flux-3d', 'turbo' (default: 'flux')
-  - Infer the most suitable model based on the prompt's content and style.
 - seed (optional): Seed for reproducible results (default: random).
 - width/height (optional): Default 1024x1024.
-- nologo (optional): Set to true to disable the logo rendering. Please always set nologo to true unless specified.
-
-## Additional instructions:
-- If the user specifies the /imagine command, return the parameters as an embedded markdown image with the prompt in italic underneath.
-
-## Example:
-![{description}](https://image.pollinations.ai/prompt/{description}?width={width}&height={height})
-*{description}*
+- nologo (optional): Set to true to disable the logo rendering. Always set nologo to true unless specified.
 """
 
 def run():
     st.title("🤖 AI Image Generator")
-    st.caption("Chat with an AI assistant to generate creative images.")
+    st.caption("Quickly generate an image or chat with the AI to refine it.")
 
-    # Initialize session state
-    if "messages" not in st.session_state:
-        st.session_state.messages = [
-            {"role": "system", "content": PREPROMPT},
-            {"role": "assistant", "content": "Hi there! Tell me what image you'd like to create."}
-        ]
+    # Toggleable instructions
+    with st.expander("Show/Hide Image Generator Instructions", expanded=False):
+        st.markdown(PREPROMPT)
 
-    # Clear Chat button
-    if st.button("🗑️ Clear Chat", key="clear"):
-        st.session_state.messages = [
-            {"role": "system", "content": PREPROMPT},
-            {"role": "assistant", "content": "Hi there! Tell me what image you'd like to create."}
-        ]
+    # ---- Initial image prompt & options ----
+    st.header("Create a New Image")
+    initial_prompt = st.text_area("Image Prompt (required)", height=80)
+    with st.expander("Advanced Settings (optional)"):
+        model = st.radio(
+            "Model:",
+            ["flux", "flux-realism", "any-dark", "flux-anime", "flux-3d", "turbo"],
+            index=0
+        )
+        aspect = st.radio(
+            "Size:",
+            ["Square (1024×1024)", "Portrait (768×1024)", "Landscape (1024×768)"],
+            index=0
+        )
+        size_map = {
+            "Square (1024×1024)": (1024, 1024),
+            "Portrait (768×1024)": (768, 1024),
+            "Landscape (1024×768)": (1024, 768)
+        }
+        width, height = size_map[aspect]
 
-    # Display conversation
-    for msg in st.session_state.messages:
-        st.chat_message(msg["role"]).write(msg["content"])
+        use_seed = st.checkbox("Specify seed for reproducibility")
+        seed = st.number_input("Seed value:", min_value=0, max_value=2**32-1, value=0) if use_seed else None
+        nologo = st.checkbox("Disable logo on output", value=True)
 
-    # User prompt input
-    prompt = st.chat_input("Type your image prompt...")
-    if prompt:
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        st.chat_message("user").write(prompt)
-
-        # Optional settings in expander
-        with st.expander("Advanced Settings (optional)"):
-            model = st.radio(
-                "Choose model:",
-                ["flux", "flux-realism", "any-dark", "flux-anime", "flux-3d", "turbo"],
-                index=0
-            )
-
-            aspect = st.radio(
-                "Image size:",
-                ["Square (1024x1024)", "Portrait (768x1024)", "Landscape (1024x768)"],
-                index=0
-            )
-            size_map = {
-                "Square (1024x1024)": (1024, 1024),
-                "Portrait (768x1024)": (768, 1024),
-                "Landscape (1024x768)": (1024, 768)
-            }
-            width, height = size_map[aspect]
-
-            use_seed = st.checkbox("Specify seed (for reproducible results)")
-            seed = st.number_input(
-                "Seed value:", min_value=0, max_value=2**32-1, value=0
-            ) if use_seed else None
-
-            nologo = st.checkbox("Disable logo on output", value=True)
-
-        # Call OpenAI API
+    if st.button("Generate Image") and initial_prompt:
+        # initialize state
+        if "messages" not in st.session_state:
+            st.session_state.messages = [
+                {"role": "system", "content": PREPROMPT}
+            ]
+        # append user request
+        params = {
+            "prompt": initial_prompt,
+            "model": model,
+            "width": width,
+            "height": height,
+            "seed": seed,
+            "nologo": nologo
+        }
+        # call API
         client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-        with st.spinner("Generating image parameters..."):
-            messages = st.session_state.messages + [{"role": "assistant", "content": prompt}]
+        with st.spinner("Generating image..."):
             try:
                 response = client.chat.completions.create(
                     model=model,
-                    messages=messages,
+                    messages=[
+                        {"role": "system", "content": PREPROMPT},
+                        {"role": "user", "content": str(params)}
+                    ],
                 )
                 assistant_msg = response.choices[0].message.content
             except Exception as e:
                 assistant_msg = f"Error: {e}"
-
-        # Append and display assistant response
+        # store messages
+        st.session_state.messages.append({"role": "user", "content": initial_prompt})
         st.session_state.messages.append({"role": "assistant", "content": assistant_msg})
-        st.chat_message("assistant").write(assistant_msg)
+
+    # ---- Chat for refinements ----
+    if "messages" in st.session_state:
+        st.header("Chat & Refine")
+        for msg in st.session_state.messages:
+            st.chat_message(msg["role"]).write(msg["content"])
+
+        followup = st.chat_input("Add another instruction or ask for edits...")
+        if followup:
+            st.session_state.messages.append({"role": "user", "content": followup})
+            st.chat_message("user").write(followup)
+            client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+            with st.spinner("AI is thinking..."):
+                try:
+                    response = client.chat.completions.create(
+                        model=model,
+                        messages=st.session_state.messages,
+                    )
+                    reply = response.choices[0].message.content
+                except Exception as e:
+                    reply = f"Error: {e}"
+            st.session_state.messages.append({"role": "assistant", "content": reply})
+            st.chat_message("assistant").write(reply)
