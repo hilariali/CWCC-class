@@ -20,7 +20,7 @@ def collapse_sidebar():
         height=0,
     )
 
-
+# Initialize session state for sidebar
 if "sidebar_closed" not in st.session_state:
     st.session_state.sidebar_closed = False
 if "current_menu" not in st.session_state:
@@ -56,10 +56,11 @@ with st.sidebar:
         },
     )
 
+    # If user selects a different menu, update state and rerun
     if selected != st.session_state.current_menu:
         st.session_state.current_menu = selected
         st.session_state.sidebar_closed = selected != "Home"
-        st.experimental_rerun()
+        st.rerun()
 
     # Developer Footer
     st.markdown("---")
@@ -75,18 +76,19 @@ with st.sidebar:
     st.markdown("---")
     linked_in_url = "https://www.linkedin.com/in/hilariali/"
     github_url = "https://github.com/hilariali/"
-    sidebar_footer = f"""
-    <div style="position: absolute; bottom: 10px; width: 100%; text-align: center;">
-    <br>
-      <a href="{linked_in_url}" target="_blank" style="margin-right: 12px;">
-        <img src="https://cdn-icons-png.flaticon.com/24/174/174857.png" alt="LinkedIn" />
-      </a>
-      <a href="{github_url}" target="_blank">
-        <img src="https://cdn-icons-png.flaticon.com/24/733/733553.png" alt="GitHub" />
-      </a>
-    </div>
-    """
-    st.markdown(sidebar_footer, unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <div style='position:absolute; bottom:10px; width:100%; text-align:center;'>
+          <a href='{linked_in_url}' target='_blank' style='margin-right:12px;'>
+            <img src='https://cdn-icons-png.flaticon.com/24/174/174857.png' alt='LinkedIn'/>
+          </a>
+          <a href='{github_url}' target='_blank'>
+            <img src='https://cdn-icons-png.flaticon.com/24/733/733553.png' alt='GitHub'/>
+          </a>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # ----------------------------------------------------------------------------
 # Main Page Header
@@ -111,25 +113,23 @@ if selected == "Home":
     )
     st.write(
         """
-        \n**Feedback Form**(https://forms.office.com/r/VLpSiCv5qP)
-        \n**Wish Collection Form**(https://forms.office.com/r/DWBkQ91LL8)
+        
+        **Feedback Form**(https://forms.office.com/r/VLpSiCv5qP)
+        
+        **Wish Collection Form**(https://forms.office.com/r/DWBkQ91LL8)
         """
     )
-
 elif selected == "YouTube Quiz Generator":
     run_youtube_quiz()
-
 elif selected == "AI Chatbot":
     run_chatbot()
-
 elif selected == "File Chat Tool":
     run_dummy2()
-
 elif selected == "Web Summarizer":
     run_web_summarizer()
-
 elif selected == "Image Generator":
     run_image_generator()
 
+# If collapsed state, collapse sidebar
 if st.session_state.sidebar_closed:
     collapse_sidebar()
