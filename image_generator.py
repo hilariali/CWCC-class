@@ -40,8 +40,8 @@ You are an image generator. The user provides a prompt. Please infer the followi
 """"
 
 def run():
-    st.title("🤖 AI Chatbot")
-    st.caption("🚀 Chat with an AI assistant powered by your secret API key.")
+    st.title("🤖 AI image generator")
+    st.caption("🚀 Chat with an AI assistant to generate an image.")
 
     # Initialize conversation with system preprompt
     if "messages" not in st.session_state:
@@ -54,7 +54,7 @@ def run():
     if st.button("🗑️ Clear Chat"):
         st.session_state.messages = [
             {"role": "system", "content": PREPROMPT},
-            {"role": "assistant", "content": "Hi there! How can I help you today?"}
+            {"role": "assistant", "content": "Hi there! I can help you to generate image, please tell me about your image."}
         ]
 
     # Model selection
@@ -70,7 +70,7 @@ def run():
         st.chat_message(msg["role"]).write(msg["content"])
 
     # Handle new user input
-    prompt = st.chat_input("Type your message...")
+    prompt = st.chat_input("Type your image prompt...")
     if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.chat_message("user").write(prompt)
