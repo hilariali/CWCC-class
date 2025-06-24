@@ -37,7 +37,7 @@ You are an image generator. The user provides a prompt. Please infer the followi
 ## Example:
 ![{description}](https://image.pollinations.ai/prompt/{description}?width={width}&height={height})
 *{description}*
-
+""""
 
 def run():
     st.title("🤖 AI Chatbot")
