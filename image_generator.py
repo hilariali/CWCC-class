@@ -60,17 +60,21 @@ def run():
         image_model = st.radio("Image Model:", ["flux","flux-realism","any-dark","flux-anime","flux-3d","turbo"], index=0)
         chat_model = st.selectbox("Chat Model:", ["DeepSeek-R1-0528","Meta-Llama-4-Maverick-17B-128E-Instruct-FP8","Qwen3-235B-A22B-FP8"], index=0)
         aspect = st.radio("Size:", ["Square (1024×1024)","Portrait (768×1024)","Landscape (1024×768)"], index=0)
-        size_map = {"Square (1024×1024"):(1024,1024),"Portrait (768×1024"):(768,1024),"Landscape (1024×768"):(1024,768)}
-        width,height = size_map[aspect]
+        size_map = {
+            "Square (1024×1024)": (1024, 1024),
+            "Portrait (768×1024)": (768, 1024),
+            "Landscape (1024×768)": (1024, 768)
+        }
+        width, height = size_map[aspect]
         use_seed = st.checkbox("Specify seed for reproducibility")
-        seed = st.number_input("Seed value:",0,2**32-1,0) if use_seed else None
+        seed = st.number_input("Seed value:", 0, 2**32-1, 0) if use_seed else None
         nologo = st.checkbox("Disable logo", value=True)
 
     # Generate image button
     if st.button("Generate Image") and initial_prompt:
         params = {
             "prompt": initial_prompt,
-            "style": None if style=="None" else style,
+            "style": None if style == "None" else style,
             "model": image_model,
             "width": width,
             "height": height,
@@ -83,8 +87,8 @@ def run():
                 response = client.chat.completions.create(
                     model=chat_model,
                     messages=[
-                        {"role":"system","content":PREPROMPT},
-                        {"role":"user","content":str(params)}
+                        {"role": "system", "content": PREPROMPT},
+                        {"role": "user", "content": str(params)}
                     ]
                 )
                 assistant_msg = response.choices[0].message.content
@@ -94,9 +98,9 @@ def run():
         st.markdown(assistant_msg)
         # Initialize conversation history for refinements
         st.session_state.messages = [
-            {"role":"system","content":PREPROMPT},
-            {"role":"user","content":initial_prompt},
-            {"role":"assistant","content":assistant_msg}
+            {"role": "system", "content": PREPROMPT},
+            {"role": "user", "content": initial_prompt},
+            {"role": "assistant", "content": assistant_msg}
         ]
 
     # Chat & refine
@@ -106,7 +110,7 @@ def run():
             st.chat_message(msg["role"]).write(msg["content"])
         followup = st.chat_input("Add instructions to modify the image...")
         if followup:
-            st.session_state.messages.append({"role":"user","content":followup})
+            st.session_state.messages.append({"role": "user", "content": followup})
             st.chat_message("user").write(followup)
             client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
             with st.spinner("Updating image..."):
@@ -118,5 +122,5 @@ def run():
                     reply = response.choices[0].message.content
                 except Exception as e:
                     reply = f"Error: {e}"
-            st.session_state.messages.append({"role":"assistant","content":reply})
+            st.session_state.messages.append({"role": "assistant", "content": reply})
             st.chat_message("assistant").write(reply)
