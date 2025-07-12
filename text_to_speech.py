@@ -15,7 +15,7 @@ LANG_OPTIONS = {
 
 def generate_speech(message: str, lang_code: str, voice: str) -> bytes | None:
     """Call the Pollinations TTS API and return audio bytes."""
-    text = f"Read the following in {lang_code}: {message}"
+    text = f"Read the following in {lang_code}: {message} You should only read the message, do not read out any other word not mentioned, you also don't need to explain"
     encoded_text = urllib.parse.quote(text)
     url = f"https://text.pollinations.ai/{encoded_text}?token={TOKEN}"
     params = {"model": "openai-audio", "voice": voice}
