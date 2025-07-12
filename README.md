@@ -6,6 +6,8 @@ This repository contains several Streamlit tools:
 - **AI Chatbot** – Chat with an AI assistant using your API key.
 - **File Chat Tool** – Upload documents and ask questions about them.
 - **Website Summarizer** – Provide a URL to get a summary and chat about that webpage.
+- **Image Generator** – Create images from text prompts.
+- **Text to Speech** – Convert text into spoken audio using Pollinations API.
 
 ## Setup
 

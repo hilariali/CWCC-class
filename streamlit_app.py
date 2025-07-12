@@ -5,6 +5,7 @@ from dummy_tool1 import run as run_chatbot
 from dummy_tool2 import run as run_dummy2
 from website_summarizer import run as run_web_summarizer
 from image_generator import run as run_image_generator
+from text_to_speech import run as run_tts
 from streamlit.components.v1 import html
 
 
@@ -40,8 +41,8 @@ st.set_page_config(
 with st.sidebar:
     selected = option_menu(
         menu_title="Menu",
-        icons=["house", "youtube", "robot", "file-earmark-text", "globe", "image"],
-        options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool", "Web Summarizer", "Image Generator"],
+        icons=["house", "youtube", "robot", "file-earmark-text", "globe", "image", "music-note-beamed"],
+        options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool", "Web Summarizer", "Image Generator", "Text to Speech"],
         default_index=0,
         styles={
             "container": {"padding": "5px", "background-color": "#f0f2f6"},
@@ -109,6 +110,7 @@ if selected == "Home":
         - **File Chat Tool**: Upload documents and ask AI questions about them.
         - **Web Summarizer**: Input a web URL, get the summary of webpage content.
         - **Image Generator**: Create images from text prompts.
+        - **Text to Speech**: Convert text into spoken audio.
         """
     )
     st.write(
@@ -129,6 +131,8 @@ elif selected == "Web Summarizer":
     run_web_summarizer()
 elif selected == "Image Generator":
     run_image_generator()
+elif selected == "Text to Speech":
+    run_tts()
 
 # If collapsed state, collapse sidebar
 if st.session_state.sidebar_closed:
