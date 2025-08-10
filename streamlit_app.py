@@ -6,6 +6,7 @@ from dummy_tool2 import run as run_dummy2
 from website_summarizer import run as run_web_summarizer
 from image_generator import run as run_image_generator
 from text_to_speech import run as run_tts
+from lesson_plan_generator import run as run_lesson_plan_generator
 from streamlit.components.v1 import html
 
 
@@ -41,8 +42,8 @@ st.set_page_config(
 with st.sidebar:
     selected = option_menu(
         menu_title="Menu",
-        icons=["house", "youtube", "robot", "file-earmark-text", "globe", "image", "music-note-beamed"],
-        options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool", "Web Summarizer", "Image Generator", "Text to Speech"],
+        icons=["house", "youtube", "robot", "file-earmark-text", "globe", "image", "music-note-beamed", "book"],
+        options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool", "Web Summarizer", "Image Generator", "Text to Speech", "Lesson Plan Generator"],
         default_index=0,
         styles={
             "container": {"padding": "5px", "background-color": "#f0f2f6"},
@@ -111,6 +112,7 @@ if selected == "Home":
         - **Web Summarizer**: Input a web URL, get the summary of webpage content.
         - **Image Generator**: Create images from text prompts.
         - **Text to Speech**: Convert text into spoken audio.
+        - **Lesson Plan Generator**: Generate Hong Kong kindergarten lesson plans following EDB curriculum guidelines.
         """
     )
     st.write(
@@ -133,6 +135,8 @@ elif selected == "Image Generator":
     run_image_generator()
 elif selected == "Text to Speech":
     run_tts()
+elif selected == "Lesson Plan Generator":
+    run_lesson_plan_generator()
 
 # If collapsed state, collapse sidebar
 if st.session_state.sidebar_closed:
