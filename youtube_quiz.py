@@ -186,6 +186,54 @@ def run():
         api_key=st.secrets["OPENAI_API_KEY"],
         base_url=st.secrets.get("OPENAI_BASE_URL"),
     )
+    
+    # Get language from session state if available
+    lang = getattr(st.session_state, 'language', 'en')
+    
+    # Translation dictionary for YouTube Quiz Generator
+    translations = {
+        "en": {
+            "title": "📚 YouTube Quiz Generator",
+            "caption": "*(Beta: only works on videos with captions)*",
+            "url_label": "YouTube video URL:",
+            "proxy_label": "Optional: HTTP(S) proxy URLs (comma-separated):",
+            "load_button": "Load Video & Proxies",
+            "lang_select": "Transcript language:",
+            "show_transcript": "Show Transcript",
+            "transcript_title": "🔹 Transcript",
+            "transcript_label": "Transcript text:",
+            "summary_button": "Generate Summary",
+            "summary_title": "🔹 Summary",
+            "grade_label": "Student's grade level:",
+            "num_questions": "Number of questions:",
+            "quiz_button": "Generate Quiz",
+            "quiz_title": "🔹 Quiz",
+            "modify_label": "Modification instructions:",
+            "modify_button": "Modify Quiz",
+        },
+        "zh": {
+            "title": "📚 YouTube 測驗生成器",
+            "caption": "*(測試版：僅適用於有字幕的影片)*",
+            "url_label": "YouTube 影片網址：",
+            "proxy_label": "可選：HTTP(S) 代理伺服器網址（逗號分隔）：",
+            "load_button": "載入影片和代理伺服器",
+            "lang_select": "字幕語言：",
+            "show_transcript": "顯示字幕",
+            "transcript_title": "🔹 字幕內容",
+            "transcript_label": "字幕文字：",
+            "summary_button": "生成摘要",
+            "summary_title": "🔹 摘要",
+            "grade_label": "學生年級：",
+            "num_questions": "問題數量：",
+            "quiz_button": "生成測驗",
+            "quiz_title": "🔹 測驗",
+            "modify_label": "修改說明：",
+            "modify_button": "修改測驗",
+        }
+    }
+    
+    def get_text(key):
+        return translations.get(lang, translations["en"]).get(key, key)
 
     defaults = {
         "last_url": "",
@@ -210,16 +258,29 @@ def run():
         if key not in st.session_state:
             st.session_state[key] = val
 
-    st.header("📚 YouTube Quiz Generator")
-    st.caption("*(Beta: only works on videos with captions)*")
+    # Display title and caption with translation
+    if lang == "zh":
+        st.markdown(f'<h2 class="chinese-text">{get_text("title")}</h2>', unsafe_allow_html=True)
+        st.markdown(f'<p class="chinese-text"><em>{get_text("caption")}</em></p>', unsafe_allow_html=True)
+    else:
+        st.header(get_text("title"))
+        st.caption(get_text("caption"))
 
     with st.form(key="input_form", clear_on_submit=False):
-        url_input = st.text_input("YouTube video URL:", value=st.session_state.last_url)
-        proxy_input = st.text_input(
-            "Optional: HTTP(S) proxy URLs (comma-separated):",
-            value=st.session_state.proxies,
-        )
-        submit_button = st.form_submit_button(label="Load Video & Proxies")
+        url_label = get_text("url_label")
+        proxy_label = get_text("proxy_label")
+        load_button_text = get_text("load_button")
+        
+        if lang == "zh":
+            st.markdown(f'<p class="chinese-text">{url_label}</p>', unsafe_allow_html=True)
+            url_input = st.text_input("", value=st.session_state.last_url, label_visibility="collapsed", key="url_input_zh")
+            st.markdown(f'<p class="chinese-text">{proxy_label}</p>', unsafe_allow_html=True)
+            proxy_input = st.text_input("", value=st.session_state.proxies, label_visibility="collapsed", key="proxy_input_zh")
+        else:
+            url_input = st.text_input(url_label, value=st.session_state.last_url, key="url_input_en")
+            proxy_input = st.text_input(proxy_label, value=st.session_state.proxies, key="proxy_input_en")
+        
+        submit_button = st.form_submit_button(label=load_button_text)
 
     if submit_button:
         st.session_state.last_url = url_input.strip()
@@ -252,12 +313,18 @@ def run():
         if not st.session_state.langs:
             st.error("No transcripts available—yt_dlp & API both failed, or IP blocked.")
         else:
+            lang_select_label = get_text("lang_select")
+            if lang == "zh":
+                st.markdown(f'<p class="chinese-text">{lang_select_label}</p>', unsafe_allow_html=True)
             st.session_state.selected_lang = st.selectbox(
-                "Transcript language:", list(st.session_state.langs.keys()), index=0
+                "" if lang == "zh" else lang_select_label, 
+                list(st.session_state.langs.keys()), 
+                index=0,
+                label_visibility="collapsed" if lang == "zh" else "visible"
             )
 
             if not st.session_state.transcript_fetched:
-                if st.button("Show Transcript"):
+                if st.button(get_text("show_transcript")):
                     text, used_proxy_trans = fetch_transcript_with_fallback(
                         vid,
                         st.session_state.selected_lang,
