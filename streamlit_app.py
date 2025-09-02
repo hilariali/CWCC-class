@@ -7,7 +7,21 @@ from website_summarizer import run as run_web_summarizer
 from image_generator import run as run_image_generator
 from text_to_speech import run as run_tts
 from streamlit.components.v1 import html
+from auth import check_authentication, authenticate_user, logout
 
+# Set page config first
+st.set_page_config(
+    page_title="CWCC AI-Tool App",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# Authentication check - if not authenticated, show login page
+if not check_authentication():
+    authenticate_user()
+    st.stop()  # Stop execution here if not authenticated
+
+# If we reach here, user is authenticated - show the main app
 
 def collapse_sidebar():
     """Trigger sidebar collapse via JavaScript."""
@@ -28,12 +42,6 @@ if "current_menu" not in st.session_state:
     st.session_state.current_menu = "Home"
 
 sidebar_state = "collapsed" if st.session_state.sidebar_closed else "expanded"
-
-st.set_page_config(
-    page_title="CWCC AI-Tool App",
-    layout="wide",
-    initial_sidebar_state=sidebar_state,
-)
 
 # ----------------------------------------------------------------------------
 # Sidebar Navigation with option_menu
@@ -62,6 +70,11 @@ with st.sidebar:
         st.session_state.current_menu = selected
         st.session_state.sidebar_closed = selected != "Home"
         st.rerun()
+
+    # Logout button
+    st.markdown("---")
+    if st.button("🚪 Logout", use_container_width=True):
+        logout()
 
     # Developer Footer
     st.markdown("---")
