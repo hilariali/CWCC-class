@@ -8,7 +8,7 @@ from image_generator import run as run_image_generator
 from text_to_speech import run as run_tts
 from streamlit.components.v1 import html
 from auth import check_authentication, authenticate_user, logout
-
+from resource import run as run_res
 # Set page config first
 st.set_page_config(
     page_title="CWCC AI-Tool App",
@@ -49,8 +49,8 @@ sidebar_state = "collapsed" if st.session_state.sidebar_closed else "expanded"
 with st.sidebar:
     selected = option_menu(
         menu_title="Menu",
-        icons=["house", "youtube", "robot", "file-earmark-text", "globe", "image", "music-note-beamed"],
-        options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool", "Web Summarizer", "Image Generator", "Text to Speech"],
+        icons=["house", "youtube", "robot", "file-earmark-text", "globe", "image", "music-note-beamed", "globe"],
+        options=["Home", "YouTube Quiz Generator", "AI Chatbot", "File Chat Tool", "Web Summarizer", "Image Generator", "Text to Speech", "Resources"],
         default_index=0,
         styles={
             "container": {"padding": "5px", "background-color": "#f0f2f6"},
@@ -146,6 +146,8 @@ elif selected == "Image Generator":
     run_image_generator()
 elif selected == "Text to Speech":
     run_tts()
+elif selected == "Resources":
+    run_res()
 
 # If collapsed state, collapse sidebar
 if st.session_state.sidebar_closed:
