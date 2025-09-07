@@ -1,18 +1,8 @@
-import streamlit as st
 import re
+import streamlit as st
 
-st.set_page_config(page_title="CWCC Resources Hub", page_icon="🔗", layout="wide")
-
-st.title("CWCC Resources Hub")
-st.caption("Titles are deep-linkable to their sections. Form links are embedded in the text.")
-
-# Set your deployed URL (no trailing slash) for absolute deep links, e.g. "https://your-app.streamlit.app"
-APP_BASE_URL = ""  # leave empty for relative #anchor links; set to your deployed base URL for external links
-
-# ---------------------------
-# Data
-# ---------------------------
-resources = [
+# Default dataset; you can pass your own via run(resources=...)
+DEFAULT_RESOURCES = [
     # --- School Innovation Development (from PDF) ---
     {"title": "Venue Booking Form", "description": "For booking school venues (TKN/Tiana).", "external_url": "https://forms.gle/N8SAHGRRBibBjJy78", "group": "School Innovation Development"},
     {"title": "Abnormalities in Campus Facilities Report Form", "description": "Report campus facility issues (Anson/Yan).", "external_url": "https://forms.gle/D6vE49j7VatquoLm6", "group": "School Innovation Development"},
@@ -40,48 +30,68 @@ resources = [
     {"title": "Filmora (Wondershare)", "description": "Video editing software — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#", "external_url": "https://filmora.wondershare.com/video-editor/", "group": "Additional Tools"},
 ]
 
-# Utilities
-def slugify(text: str) -> str:
+def _slugify(text: str) -> str:
     s = text.lower()
     s = s.replace("&", "and")
     s = re.sub(r"[^a-z0-9\\- ]", "", s)
     s = re.sub(r"\\s+", "-", s).strip("-")
     return s
 
-for item in resources:
-    item["anchor"] = slugify(item["title"])
+def run(resources=None, app_base_url: str = "", show_toc: bool = True, show_title: bool = True):
+    """
+    Render the Resources page.
 
-# Sidebar TOC
-st.sidebar.header("Jump to a Section")
-by_group = {}
-for r in resources:
-    by_group.setdefault(r["group"], []).append(r)
+    Parameters
+    ----------
+    resources : list[dict] or None
+        Items with keys: title, description, external_url, group.
+        If None, uses DEFAULT_RESOURCES.
+    app_base_url : str
+        If set, titles will link to absolute URLs like {app_base_url}#anchor.
+        Leave empty for relative #anchor links.
+    show_toc : bool
+        Show the sidebar Table of Contents.
+    show_title : bool
+        Show the top title "CWCC Resources Hub".
+    """
+    data = resources or DEFAULT_RESOURCES
 
-for group, items in by_group.items():
-    with st.sidebar.expander(group, expanded=True):
-        for r in items:
-            anchor = r["anchor"]
-            link = f"{APP_BASE_URL}#{anchor}" if APP_BASE_URL else f"#{anchor}"
-            st.markdown(f"- [{r['title']}]({link})")
+    if show_title:
+        st.title("CWCC Resources Hub")
+        st.caption("Titles are deep-linkable to their sections. Form links are embedded in the text.")
 
-st.markdown("---")
+    # Attach anchors
+    for item in data:
+        item["anchor"] = _slugify(item["title"])
 
-# Sections
-for r in resources:
-    anchor = r["anchor"]
-    # Anchor target (invisible)
-    st.markdown(f'<div id="{anchor}"></div>', unsafe_allow_html=True)
+    # Sidebar TOC
+    if show_toc:
+        st.sidebar.header("Jump to a Section")
+        by_group = {}
+        for r in data:
+            by_group.setdefault(r["group"], []).append(r)
+        for group, items in by_group.items():
+            with st.sidebar.expander(group, expanded=True):
+                for r in items:
+                    link = f"{app_base_url}#{r['anchor']}" if app_base_url else f"#{r['anchor']}"
+                    st.markdown(f"- [{r['title']}]({link})")
 
-    # Build absolute/relative link to this section
-    section_link = f"{APP_BASE_URL}#{anchor}" if APP_BASE_URL else f"#{anchor}"
+    st.markdown("---")
 
-    # Render the title AS a link to this section (so external apps can point to it)
-    st.markdown(f"### [{r['title']}]({section_link})")
+    # Sections
+    for r in data:
+        anchor = r["anchor"]
+        # Invisible anchor
+        st.markdown(f'<div id="{anchor}"></div>', unsafe_allow_html=True)
 
-    # Embedded form/resource link in text
-    if r["description"]:
-        st.markdown(f"{r['description']} [Open the link]({r['external_url']}).")
-    else:
-        st.markdown(f"[Open the link here]({r['external_url']}).")
+        # Title linked to its own section
+        section_link = f"{app_base_url}#{anchor}" if app_base_url else f"#{anchor}"
+        st.markdown(f"### [{r['title']}]({section_link})")
 
-    st.divider()
+        # Embedded external/form link
+        if r.get("description"):
+            st.markdown(f"{r['description']} [Open the link]({r['external_url']}).")
+        else:
+            st.markdown(f"[Open the link here]({r['external_url']}).")
+
+        st.divider()
