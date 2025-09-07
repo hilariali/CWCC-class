@@ -37,7 +37,7 @@ def _slugify(text: str) -> str:
     s = re.sub(r"\\s+", "-", s).strip("-")
     return s
 
-def run(resources=None, app_base_url: str = "", show_toc: bool = True, show_title: bool = True):
+def run_res (resources=None, app_base_url: str = "", show_toc: bool = True, show_title: bool = True):
     """
     Render the Resources page.
 
