@@ -13,32 +13,32 @@ except:
 # ---------------------------
 RESOURCES: List[Dict[str, Optional[str]]] = [
     # --- School Innovation Development (from PDF) ---
-    {"title": "Venue Booking Form", "description": "For booking school venues (TKN/Tiana).", "external_url": "https://forms.gle/N8SAHGRRBibBjJy78", "group": "School Innovation Development"},
-    {"title": "Abnormalities in Campus Facilities Report Form", "description": "Report campus facility issues (Anson/Yan).", "external_url": "https://forms.gle/D6vE49j7VatquoLm6", "group": "School Innovation Development"},
-    {"title": "Guest Car Parking Registration Form", "description": "Register guest vehicles (Tiana/Yan).", "external_url": "https://forms.gle/DRc6PVSbjsq2bHGx6", "group": "School Innovation Development"},
-    {"title": "Floor Plan of Campus", "description": "Google Sheet containing the campus layout.", "external_url": "https://docs.google.com/spreadsheets/d/1XNOQR8vhxlXj2zpVwNtSaZ_ntq10yDI37FXkwD4O8As/edit?usp=sharing", "group": "School Innovation Development"},
-    {"title": "Staff Room Seating Plan", "description": "Staff seating arrangements.", "external_url": "https://docs.google.com/spreadsheets/d/1hnBIBlmQqBjQC8qUqX_LCXhuk9LP42mvMRNCbzaSJ8g/edit?usp=sharing", "group": "School Innovation Development"},
-    {"title": "Classroom Seating Chart", "description": "Classroom seating charts.", "external_url": "https://docs.google.com/spreadsheets/d/1DJbamFd5gNmEqBe-zlWODBoqdU_lCPXdA_3Ymrw58Ro/edit?usp=sharing", "group": "School Innovation Development"},
+    {"id": "venue-booking-form", "title": "Venue Booking Form", "description": "For booking school venues (TKN/Tiana).", "placeholder_text": "Please contact the office to access the venue booking form.", "page_function": "venue_booking", "group": "School Innovation Development"},
+    {"id": "facility-report-form", "title": "Abnormalities in Campus Facilities Report Form", "description": "Report campus facility issues (Anson/Yan).", "placeholder_text": "Please contact the facilities team to report any campus issues.", "page_function": "facility_report", "group": "School Innovation Development"},
+    {"id": "guest-parking-form", "title": "Guest Car Parking Registration Form", "description": "Register guest vehicles (Tiana/Yan).", "placeholder_text": "Please contact security to register guest vehicles.", "page_function": "guest_parking", "group": "School Innovation Development"},
+    {"id": "campus-floor-plan", "title": "Floor Plan of Campus", "description": "Google Sheet containing the campus layout.", "placeholder_text": "Campus floor plan will be available through the directory system.", "page_function": "campus_layout", "group": "School Innovation Development"},
+    {"id": "staff-seating-plan", "title": "Staff Room Seating Plan", "description": "Staff seating arrangements.", "placeholder_text": "Staff seating arrangements will be available through the directory system.", "page_function": "staff_seating", "group": "School Innovation Development"},
+    {"id": "classroom-seating-chart", "title": "Classroom Seating Chart", "description": "Classroom seating charts.", "placeholder_text": "Classroom seating charts will be available through the directory system.", "page_function": "classroom_seating", "group": "School Innovation Development"},
 
     # --- 2526 Student Innovation Development (from Word) ---
-    {"title": "Misbehaviour Form", "description": "Card & uniform ONLY.", "external_url": "https://forms.gle/VDPiL1CFQLYmdSff7", "group": "2526 Student Innovation Development"},
-    {"title": "Teacher On-duty List (教師當值)", "description": "Schedules (1/9–4/9 and from 5/9 onwards).", "external_url": "https://forms.gle/XM7WQAyuSXmQhPFn6", "group": "2526 Student Innovation Development"},
-    {"title": "Morning Assembly – Announcement / Card Issue (早會宣佈/學生証)", "description": "CT must check daily.", "external_url": "https://drive.google.com/drive/folders/1QQxMRJ2O3EtW_TAgKvI3l1JQYsaerJow?usp=drive_link", "group": "2526 Student Innovation Development"},
-    {"title": "Attendance & Behavioural Record / Sunshine Call", "description": "", "external_url": "https://docs.google.com/document/d/1mgayREPsgpRqJsC3eHodWjn-DVDSOPhxjkA1d3TIGWE/edit?usp=drive_link", "group": "2526 Student Innovation Development"},
-    {"title": "Class Committee List (1st Term)", "description": "", "external_url": "https://docs.google.com/spreadsheets/d/1NDaW7YXF_vDj05Os0AWLSK8vdg63-ptYE6hWl2sf4KQ/edit?usp=sharing", "group": "2526 Student Innovation Development"},
-    {"title": "Credit/Warning Form", "description": "Please discuss with Form Teacher first.", "external_url": "https://forms.gle/TMaRvDsAM8K8S2B5A", "group": "2526 Student Innovation Development"},
-    {"title": "Referral Form", "description": "Refer to social worker.", "external_url": "https://drive.google.com/file/d/1b4-Uwz2fclhOHQaIPKIVbfViRv-K19ls/view?usp=drive_link", "group": "2526 Student Innovation Development"},
-    {"title": "Class Building Materials", "description": "", "external_url": "https://docs.google.com/document/d/1I79w_6ldXjjO62_QO-cyCEMU24IPbDO9S_IXtcZZ8fA/edit?tab=t.0", "group": "2526 Student Innovation Development"},
-    {"title": "G & D Handbook", "description": "", "external_url": "https://drive.google.com/file/d/1SrUon3n-eGl8Uz7yLMLp8dYDQev1aYck/view?usp=drive_link", "group": "2526 Student Innovation Development"},
-    {"title": "e-Conduct Evaluation (To be updated)", "description": "", "external_url": "https://docs.google.com/spreadsheets/d/193Hhysj5NhMEeSqJsOXN7mfXX_8AxZO_4J0I31Q-wrI/edit#gid=684919084", "group": "2526 Student Innovation Development"},
-    {"title": "Post Exam Activities (To be updated)", "description": "", "external_url": "https://docs.google.com/spreadsheets/d/193Hhysj5NhMEeSqJsOXN7mfXX_8AxZO_4J0I31Q-wrI/edit#gid=684919084", "group": "2526 Student Innovation Development"},
-    {"title": "Ramadan List (To be updated)", "description": "", "external_url": "https://docs.google.com/spreadsheets/d/193Hhysj5NhMEeSqJsOXN7mfXX_8AxZO_4J0I31Q-wrI/edit#gid=684919084", "group": "2526 Student Innovation Development"},
-    {"title": "Weekly Assembly (2526 週會節)", "description": "", "external_url": "https://docs.google.com/document/d/1w-7vyZ2vfuEjRvYvbhRd7v-CSHGZxFSmaukaJhf_XZc/edit?tab=t.0", "group": "2526 Student Innovation Development"},
-    {"title": "Class Teachers", "description": "", "external_url": "https://docs.google.com/spreadsheets/d/1TCgRVvk1J55bzxcqLHaMvAhnBB8BKOo405MOFJTQibI/edit?gid=1506328782#gid=1506328782", "group": "2526 Student Innovation Development"},
+    {"id": "misbehaviour-form", "title": "Misbehaviour Form", "description": "Card & uniform ONLY.", "placeholder_text": "Please contact student affairs to access the misbehaviour form.", "page_function": "misbehaviour_form", "group": "2526 Student Innovation Development"},
+    {"id": "teacher-duty-list", "title": "Teacher On-duty List (教師當值)", "description": "Schedules (1/9–4/9 and from 5/9 onwards).", "placeholder_text": "Teacher duty schedules will be available through the directory system.", "page_function": "teacher_duty", "group": "2526 Student Innovation Development"},
+    {"id": "morning-assembly", "title": "Morning Assembly – Announcement / Card Issue (早會宣佈/學生証)", "description": "CT must check daily.", "placeholder_text": "Morning assembly announcements will be available through the directory system.", "page_function": "morning_assembly", "group": "2526 Student Innovation Development"},
+    {"id": "attendance-record", "title": "Attendance & Behavioural Record / Sunshine Call", "description": "", "placeholder_text": "Attendance and behavioural records will be available through the directory system.", "page_function": "attendance_record", "group": "2526 Student Innovation Development"},
+    {"id": "class-committee-list", "title": "Class Committee List (1st Term)", "description": "", "placeholder_text": "Class committee information will be available through the directory system.", "page_function": "class_committee", "group": "2526 Student Innovation Development"},
+    {"id": "credit-warning-form", "title": "Credit/Warning Form", "description": "Please discuss with Form Teacher first.", "placeholder_text": "Please contact your form teacher to access the credit/warning form.", "page_function": "credit_warning", "group": "2526 Student Innovation Development"},
+    {"id": "referral-form", "title": "Referral Form", "description": "Refer to social worker.", "placeholder_text": "Please contact student counseling services for referral forms.", "page_function": "referral_form", "group": "2526 Student Innovation Development"},
+    {"id": "class-building-materials", "title": "Class Building Materials", "description": "", "placeholder_text": "Class building materials will be available through the directory system.", "page_function": "class_materials", "group": "2526 Student Innovation Development"},
+    {"id": "gd-handbook", "title": "G & D Handbook", "description": "", "placeholder_text": "Guidance and Discipline handbook will be available through the directory system.", "page_function": "gd_handbook", "group": "2526 Student Innovation Development"},
+    {"id": "conduct-evaluation", "title": "e-Conduct Evaluation (To be updated)", "description": "", "placeholder_text": "Conduct evaluation system will be available through the directory system.", "page_function": "conduct_evaluation", "group": "2526 Student Innovation Development"},
+    {"id": "post-exam-activities", "title": "Post Exam Activities (To be updated)", "description": "", "placeholder_text": "Post exam activities information will be available through the directory system.", "page_function": "post_exam_activities", "group": "2526 Student Innovation Development"},
+    {"id": "ramadan-list", "title": "Ramadan List (To be updated)", "description": "", "placeholder_text": "Ramadan schedule information will be available through the directory system.", "page_function": "ramadan_list", "group": "2526 Student Innovation Development"},
+    {"id": "weekly-assembly", "title": "Weekly Assembly (2526 週會節)", "description": "", "placeholder_text": "Weekly assembly information will be available through the directory system.", "page_function": "weekly_assembly", "group": "2526 Student Innovation Development"},
+    {"id": "class-teachers", "title": "Class Teachers", "description": "", "placeholder_text": "Class teacher information will be available through the directory system.", "page_function": "class_teachers", "group": "2526 Student Innovation Development"},
 
     # --- Additional Tools ---
-    {"title": "Canva", "description": "Design resources login — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#", "external_url": "https://www.canva.com/", "group": "Additional Tools"},
-    {"title": "Filmora (Wondershare)", "description": "Video editing software — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#", "external_url": "https://filmora.wondershare.com/video-editor/", "group": "Additional Tools"},
+    {"id": "canva-tool", "title": "Canva", "description": "Design resources login — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#", "placeholder_text": "Canva design tool access will be available through the directory system.", "page_function": "canva_tool", "group": "Additional Tools"},
+    {"id": "filmora-tool", "title": "Filmora (Wondershare)", "description": "Video editing software — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#", "placeholder_text": "Filmora video editing tool access will be available through the directory system.", "page_function": "filmora_tool", "group": "Additional Tools"},
 ]
 
 # ---------------------------
@@ -57,7 +57,7 @@ def run(
     show_toc: bool = True,
     show_title: bool = True,
     title_text: str = "Resources Hub",
-    subtitle_text: str = "Titles deep-link to sections. External links are embedded in the text."
+    subtitle_text: str = "Titles deep-link to sections. Resources will be accessible through the directory system."
 ):
     """Render the Resources Hub page.
 
@@ -106,15 +106,27 @@ def run(
         section_link = f"{base}#{anchor}" if base else f"#{anchor}"
         st.markdown(f"### [{r['title']}]({section_link})")
 
-        # Embedded external link in the text (if provided)
+        # Display description and placeholder text
         desc = (r.get("description") or "").strip()
-        url = (r.get("external_url") or "").strip()
-        if desc and url:
-            st.markdown(f"{desc} [Open the link]({url}).")
-        elif desc and not url:
+        placeholder = (r.get("placeholder_text") or "").strip()
+        
+        if desc and placeholder:
+            st.markdown(f"{desc}")
+            st.info(f"📍 {placeholder}")
+        elif desc and not placeholder:
             st.markdown(desc)
-        elif url and not desc:
-            st.markdown(f"[Open the link here]({url}).")
+        elif placeholder and not desc:
+            st.info(f"📍 {placeholder}")
+        
+        # Display resource ID and page function for reference
+        resource_id = r.get("id", "")
+        page_function = r.get("page_function", "")
+        if resource_id or page_function:
+            with st.expander("🔧 Technical Info", expanded=False):
+                if resource_id:
+                    st.code(f"Resource ID: {resource_id}")
+                if page_function:
+                    st.code(f"Page Function: {page_function}")
 
         st.divider()
 
@@ -127,5 +139,5 @@ if __name__ == "__main__":
         show_toc=True,
         show_title=True,
         title_text="CWCC Resources Hub",
-        subtitle_text="Titles deep-link to sections. External links are embedded in the text."
+        subtitle_text="Titles deep-link to sections. Resources will be accessible through the directory system."
     )
