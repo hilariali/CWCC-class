@@ -2,7 +2,11 @@ import re
 import streamlit as st
 from typing import List, Dict, Optional
 
-APP_BASE_URL = st.secrets.get("APP_BASE_URL", "")  # leave empty for relative links; set to absolute base URL if deployed
+# Handle secrets gracefully - only access when in Streamlit context
+try:
+    APP_BASE_URL = st.secrets.get("APP_BASE_URL", "")
+except:
+    APP_BASE_URL = ""  # leave empty for relative links; set to absolute base URL if deployed
 
 # ---------------------------
 # Resource Data (All in one file)
@@ -43,8 +47,8 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
 def _slugify(text: str) -> str:
     s = text.lower()
     s = s.replace("&", "and")
-    s = re.sub(r"[^a-z0-9\\- ]", "", s)
-    s = re.sub(r"\\s+", "-", s).strip("-")
+    s = re.sub(r"[^a-z0-9\- ]", "", s)
+    s = re.sub(r"\s+", "-", s).strip("-")
     return s
 
 def run(
