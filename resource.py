@@ -114,26 +114,80 @@ def run(
         st.markdown(f'<div id="{anchor}"></div>', unsafe_allow_html=True)
         
         with cols[col_idx % 3]:
-            # Create a card-like container for each resource
+            # Create a card-like container for each resource with enhanced styling
             with st.container():
                 st.markdown(f"""
                 <div style="
-                    border: 1px solid #e0e0e0; 
-                    border-radius: 10px; 
-                    padding: 15px; 
-                    margin: 10px 0; 
-                    background-color: #f8f9fa;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    border: 2px solid #e3f2fd; 
+                    border-radius: 15px; 
+                    padding: 20px; 
+                    margin: 15px 5px; 
+                    background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                    cursor: pointer;
                 ">
-                    <h4 style="margin-top: 0; color: #1f77b4;">{r['title']}</h4>
-                    <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
-                        Group: {r.get('group', 'Ungrouped')}
-                    </p>
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 10px;
+                    ">
+                        <div style="
+                            width: 40px;
+                            height: 40px;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-right: 15px;
+                        ">
+                            <span style="color: white; font-size: 18px;">📋</span>
+                        </div>
+                        <h4 style="margin: 0; color: #1565c0; font-weight: 600;">{r['title']}</h4>
+                    </div>
+                    <div style="
+                        background: rgba(255,255,255,0.8);
+                        padding: 8px 12px;
+                        border-radius: 20px;
+                        margin-bottom: 15px;
+                        display: inline-block;
+                    ">
+                        <small style="color: #666; font-weight: 500;">
+                            🏢 {r.get('group', 'Ungrouped')}
+                        </small>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Clickable button to show popup
-                if st.button(f"🔍 View Details", key=f"main_{anchor}", help=f"Click to view details about {r['title']}"):
+                # Enhanced clickable button with better styling
+                st.markdown("""
+                <style>
+                .stButton > button {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 25px;
+                    padding: 12px 24px;
+                    font-weight: 600;
+                    font-size: 14px;
+                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                    transition: all 0.3s ease;
+                    width: 100%;
+                }
+                .stButton > button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+                }
+                </style>
+                """, unsafe_allow_html=True)
+                
+                if st.button(
+                    f"🔍 View Details", 
+                    key=f"main_{anchor}", 
+                    help=f"Click to view details about {r['title']}",
+                    use_container_width=True
+                ):
                     st.session_state.show_popup = True
                     st.session_state.popup_resource = r
         
@@ -141,33 +195,87 @@ def run(
 
     # Display popup modal
     if st.session_state.show_popup and st.session_state.popup_resource:
+        # Add JavaScript for smooth scrolling to popup
+        st.markdown("""
+        <script>
+        setTimeout(function() {
+            const popup = document.querySelector('[data-testid="stMarkdownContainer"]:has-text("📋 Resource Details")');
+            if (popup) {
+                popup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
+        </script>
+        """, unsafe_allow_html=True)
+        
         with st.container():
-            # Create modal-like overlay
-            st.markdown("---")
-            st.markdown("### 📋 Resource Details")
+            # Create prominent modal-like overlay with enhanced styling
+            st.markdown("""
+            <div style="
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 20px;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                margin: 20px 0;
+                border: 3px solid #4CAF50;
+            ">
+                <h2 style="color: white; text-align: center; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                    📋 Resource Details
+                </h2>
+            </div>
+            """, unsafe_allow_html=True)
             
             resource = st.session_state.popup_resource
             
-            # Close button
-            col1, col2 = st.columns([5, 1])
-            with col2:
-                if st.button("✖ Close", key="close_popup"):
+            # Enhanced layout with better visual hierarchy
+            col1, col2, col3 = st.columns([4, 1, 1])
+            with col1:
+                st.markdown(f"""
+                <div style="
+                    background: #f8f9fa;
+                    padding: 15px;
+                    border-radius: 10px;
+                    border-left: 5px solid #007bff;
+                    margin: 10px 0;
+                ">
+                    <h2 style="color: #007bff; margin: 0;">{resource['title']}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col3:
+                if st.button("✖ Close", key="close_popup", help="Close resource details"):
                     st.session_state.show_popup = False
                     st.session_state.popup_resource = None
                     st.rerun()
             
-            with col1:
-                st.markdown(f"## {resource['title']}")
-            
-            # Display resource information
-            st.markdown(f"**Group:** {resource.get('group', 'Ungrouped')}")
+            # Enhanced information display with better styling
+            st.markdown(f"""
+            <div style="
+                background: #e3f2fd;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 10px 0;
+                border: 1px solid #bbdefb;
+            ">
+                <strong style="color: #1976d2;">Group:</strong> {resource.get('group', 'Ungrouped')}
+            </div>
+            """, unsafe_allow_html=True)
             
             desc = (resource.get("description") or "").strip()
             placeholder = (resource.get("placeholder_text") or "").strip()
             
             if desc:
                 st.markdown("**Description:**")
-                st.markdown(desc)
+                st.markdown(f"""
+                <div style="
+                    background: #fff3e0;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 10px 0;
+                    border-left: 4px solid #ff9800;
+                ">
+                    {desc}
+                </div>
+                """, unsafe_allow_html=True)
             
             if placeholder:
                 st.markdown("**Access Information:**")
@@ -183,11 +291,40 @@ def run(
                     if page_function:
                         st.code(f"Page Function: {page_function}")
             
-            # Deep link
+            # Deep link with enhanced styling
             section_link = f"{base}#{resource['anchor']}" if base else f"#{resource['anchor']}"
-            st.markdown(f"**Direct Link:** [🔗 {resource['title']}]({section_link})")
+            st.markdown(f"""
+            <div style="
+                background: #e8f5e8;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 10px 0;
+                border: 1px solid #4caf50;
+                text-align: center;
+            ">
+                <strong>Direct Link:</strong> 
+                <a href="{section_link}" style="
+                    color: #2e7d32;
+                    text-decoration: none;
+                    font-weight: bold;
+                    background: #4caf50;
+                    color: white;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    margin-left: 10px;
+                ">🔗 {resource['title']}</a>
+            </div>
+            """, unsafe_allow_html=True)
             
-            st.markdown("---")
+            # Add a prominent separator
+            st.markdown("""
+            <div style="
+                height: 4px;
+                background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+                border-radius: 2px;
+                margin: 20px 0;
+            "></div>
+            """, unsafe_allow_html=True)
 
 # Standalone execution
 if __name__ == "__main__":
