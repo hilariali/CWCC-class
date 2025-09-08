@@ -13,32 +13,32 @@ except:
 # ---------------------------
 RESOURCES: List[Dict[str, Optional[str]]] = [
     # --- School Innovation Development (from PDF) ---
-    {"id": "venue-booking-form", "title": "Venue Booking Form", "description": "For booking school venues (TKN/Tiana).", "placeholder_text": "Please contact the office to access the venue booking form.", "page_function": "venue_booking", "group": "School Innovation Development"},
-    {"id": "facility-report-form", "title": "Abnormalities in Campus Facilities Report Form", "description": "Report campus facility issues (Anson/Yan).", "placeholder_text": "Please contact the facilities team to report any campus issues.", "page_function": "facility_report", "group": "School Innovation Development"},
-    {"id": "guest-parking-form", "title": "Guest Car Parking Registration Form", "description": "Register guest vehicles (Tiana/Yan).", "placeholder_text": "Please contact security to register guest vehicles.", "page_function": "guest_parking", "group": "School Innovation Development"},
-    {"id": "campus-floor-plan", "title": "Floor Plan of Campus", "description": "Google Sheet containing the campus layout.", "placeholder_text": "Campus floor plan will be available through the directory system.", "page_function": "campus_layout", "group": "School Innovation Development"},
-    {"id": "staff-seating-plan", "title": "Staff Room Seating Plan", "description": "Staff seating arrangements.", "placeholder_text": "Staff seating arrangements will be available through the directory system.", "page_function": "staff_seating", "group": "School Innovation Development"},
-    {"id": "classroom-seating-chart", "title": "Classroom Seating Chart", "description": "Classroom seating charts.", "placeholder_text": "Classroom seating charts will be available through the directory system.", "page_function": "classroom_seating", "group": "School Innovation Development"},
+    {"id": "venue-booking-form", "title": "Venue Booking Form", "description": "For booking school venues (TKN/Tiana).", "placeholder_text": "Please contact the office to access the venue booking form.", "group": "School Innovation Development"},
+    {"id": "facility-report-form", "title": "Abnormalities in Campus Facilities Report Form", "description": "Report campus facility issues (Anson/Yan).", "placeholder_text": "Please contact the facility management to report issues.", "group": "School Innovation Development"},
+    {"id": "guest-parking-form", "title": "Guest Car Parking Registration Form", "description": "Register guest vehicles (Tiana/Yan).", "placeholder_text": "Please contact security to register guest vehicles.", "group": "School Innovation Development"},
+    {"id": "campus-floor-plan", "title": "Floor Plan of Campus", "description": "Google Sheet containing the campus layout.", "placeholder_text": "Campus floor plan will be available through the directory system.", "group": "School Innovation Development"},
+    {"id": "staff-seating-plan", "title": "Staff Room Seating Plan", "description": "Staff seating arrangements.", "placeholder_text": "Staff seating arrangements will be available through the directory system.", "group": "School Innovation Development"},
+    {"id": "classroom-seating-chart", "title": "Classroom Seating Chart", "description": "Classroom seating charts.", "placeholder_text": "Classroom seating charts will be available through the directory system.", "group": "School Innovation Development"},
 
     # --- 2526 Student Innovation Development (from Word) ---
-    {"id": "misbehaviour-form", "title": "Misbehaviour Form", "description": "Card & uniform ONLY.", "placeholder_text": "Please contact student affairs to access the misbehaviour form.", "page_function": "misbehaviour_form", "group": "2526 Student Innovation Development"},
-    {"id": "teacher-duty-list", "title": "Teacher On-duty List (教師當值)", "description": "Schedules (1/9–4/9 and from 5/9 onwards).", "placeholder_text": "Teacher duty schedules will be available through the directory system.", "page_function": "teacher_duty", "group": "2526 Student Innovation Development"},
-    {"id": "morning-assembly", "title": "Morning Assembly – Announcement / Card Issue (早會宣佈/學生証)", "description": "CT must check daily.", "placeholder_text": "Morning assembly announcements will be available through the directory system.", "page_function": "morning_assembly", "group": "2526 Student Innovation Development"},
-    {"id": "attendance-record", "title": "Attendance & Behavioural Record / Sunshine Call", "description": "", "placeholder_text": "Attendance and behavioural records will be available through the directory system.", "page_function": "attendance_record", "group": "2526 Student Innovation Development"},
-    {"id": "class-committee-list", "title": "Class Committee List (1st Term)", "description": "", "placeholder_text": "Class committee information will be available through the directory system.", "page_function": "class_committee", "group": "2526 Student Innovation Development"},
-    {"id": "credit-warning-form", "title": "Credit/Warning Form", "description": "Please discuss with Form Teacher first.", "placeholder_text": "Please contact your form teacher to access the credit/warning form.", "page_function": "credit_warning", "group": "2526 Student Innovation Development"},
-    {"id": "referral-form", "title": "Referral Form", "description": "Refer to social worker.", "placeholder_text": "Please contact student counseling services for referral forms.", "page_function": "referral_form", "group": "2526 Student Innovation Development"},
-    {"id": "class-building-materials", "title": "Class Building Materials", "description": "", "placeholder_text": "Class building materials will be available through the directory system.", "page_function": "class_materials", "group": "2526 Student Innovation Development"},
-    {"id": "gd-handbook", "title": "G & D Handbook", "description": "", "placeholder_text": "Guidance and Discipline handbook will be available through the directory system.", "page_function": "gd_handbook", "group": "2526 Student Innovation Development"},
-    {"id": "conduct-evaluation", "title": "e-Conduct Evaluation (To be updated)", "description": "", "placeholder_text": "Conduct evaluation system will be available through the directory system.", "page_function": "conduct_evaluation", "group": "2526 Student Innovation Development"},
-    {"id": "post-exam-activities", "title": "Post Exam Activities (To be updated)", "description": "", "placeholder_text": "Post exam activities information will be available through the directory system.", "page_function": "post_exam_activities", "group": "2526 Student Innovation Development"},
-    {"id": "ramadan-list", "title": "Ramadan List (To be updated)", "description": "", "placeholder_text": "Ramadan schedule information will be available through the directory system.", "page_function": "ramadan_list", "group": "2526 Student Innovation Development"},
-    {"id": "weekly-assembly", "title": "Weekly Assembly (2526 週會節)", "description": "", "placeholder_text": "Weekly assembly information will be available through the directory system.", "page_function": "weekly_assembly", "group": "2526 Student Innovation Development"},
-    {"id": "class-teachers", "title": "Class Teachers", "description": "", "placeholder_text": "Class teacher information will be available through the directory system.", "page_function": "class_teachers", "group": "2526 Student Innovation Development"},
+    {"id": "misbehaviour-form", "title": "Misbehaviour Form", "description": "Card & uniform ONLY.", "placeholder_text": "Please contact student affairs to access the misbehaviour form.", "page_function": "misbehaviour_form", "group": "Student Innovation Development"},
+    {"id": "teacher-duty-list", "title": "Teacher On-duty List (教師當值)", "description": "Schedules (1/9–4/9 and from 5/9 onwards).", "placeholder_text": "Teacher duty schedules will be available through the directory system.", "page_function": "teacher_duty", "group": "Student Innovation Development"},
+    {"id": "morning-assembly", "title": "Morning Assembly – Announcement / Card Issue (早會宣佈/學生証)", "description": "CT must check daily.", "placeholder_text": "Morning assembly announcements will be available through the directory system.", "page_function": "morning_assembly", "group": "Student Innovation Development"},
+    {"id": "attendance-record", "title": "Attendance & Behavioural Record / Sunshine Call", "description": "", "placeholder_text": "Attendance and behavioural records will be available through the directory system.", "page_function": "attendance_record", "group": "Student Innovation Development"},
+    {"id": "class-committee-list", "title": "Class Committee List (1st Term)", "description": "", "placeholder_text": "Class committee information will be available through the directory system.", "page_function": "class_committee", "group": "Student Innovation Development"},
+    {"id": "credit-warning-form", "title": "Credit/Warning Form", "description": "Please discuss with Form Teacher first.", "placeholder_text": "Please contact your form teacher to access the credit/warning form.", "page_function": "credit_warning", "group": "Student Innovation Development"},
+    {"id": "referral-form", "title": "Referral Form", "description": "Refer to social worker.", "placeholder_text": "Please contact student counseling services for referral forms.", "page_function": "referral_form", "group": "Student Innovation Development"},
+    {"id": "class-building-materials", "title": "Class Building Materials", "description": "", "placeholder_text": "Class building materials will be available through the directory system.", "page_function": "class_materials", "group": "Student Innovation Development"},
+    {"id": "gd-handbook", "title": "G & D Handbook", "description": "", "placeholder_text": "Guidance and Discipline handbook will be available through the directory system.", "page_function": "gd_handbook", "group": "Student Innovation Development"},
+    {"id": "conduct-evaluation", "title": "e-Conduct Evaluation (To be updated)", "description": "", "placeholder_text": "Conduct evaluation system will be available through the directory system.", "page_function": "conduct_eval", "group": "Student Innovation Development"},
+    {"id": "post-exam-activities", "title": "Post Exam Activities (To be updated)", "description": "", "placeholder_text": "Post exam activities information will be available through the directory system.", "page_function": "post_exam", "group": "Student Innovation Development"},
+    {"id": "ramadan-list", "title": "Ramadan List (To be updated)", "description": "", "placeholder_text": "Ramadan schedule information will be available through the directory system.", "page_function": "ramadan_list", "group": "Student Innovation Development"},
+    {"id": "weekly-assembly", "title": "Weekly Assembly (2526 週會節)", "description": "", "placeholder_text": "Weekly assembly information will be available through the directory system.", "page_function": "weekly_assembly", "group": "Student Innovation Development"},
+    {"id": "class-teachers", "title": "Class Teachers", "description": "", "placeholder_text": "Class teacher information will be available through the directory system.", "page_function": "class_teachers", "group": "Student Innovation Development"},
 
     # --- Additional Tools ---
     {"id": "canva-tool", "title": "Canva", "description": "Design resources login — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#", "placeholder_text": "Canva design tool access will be available through the directory system.", "page_function": "canva_tool", "group": "Additional Tools"},
-    {"id": "filmora-tool", "title": "Filmora (Wondershare)", "description": "Video editing software — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#", "placeholder_text": "Filmora video editing tool access will be available through the directory system.", "page_function": "filmora_tool", "group": "Additional Tools"},
+    {"id": "filmora-tool", "title": "Filmora (Wondershare)", "description": "Video editing software — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#", "placeholder_text": "Filmora video editing software access will be available through the directory system.", "page_function": "filmora_tool", "group": "Additional Tools"},
 ]
 
 # ---------------------------
@@ -50,6 +50,51 @@ def _slugify(text: str) -> str:
     s = re.sub(r"[^a-z0-9\- ]", "", s)
     s = re.sub(r"\s+", "-", s).strip("-")
     return s
+
+def _add_scroll_to_popup_js():
+    """Add JavaScript to automatically scroll to popup when it appears"""
+    return """
+    <script>
+    function scrollToPopup() {
+        setTimeout(function() {
+            // Look for the popup container
+            const popupElements = window.parent.document.querySelectorAll('[data-testid="stMarkdown"]');
+            let popupFound = false;
+            
+            for (let element of popupElements) {
+                if (element.innerHTML.includes('📋 Resource Details')) {
+                    element.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                    popupFound = true;
+                    break;
+                }
+            }
+            
+            // Alternative method - scroll to bottom if popup not found via content
+            if (!popupFound) {
+                const containers = window.parent.document.querySelectorAll('[data-testid="stVerticalBlock"]');
+                if (containers.length > 0) {
+                    const lastContainer = containers[containers.length - 1];
+                    lastContainer.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }
+            }
+        }, 200);
+    }
+    
+    // Execute scroll function
+    scrollToPopup();
+    
+    // Also execute on any state changes
+    setTimeout(scrollToPopup, 500);
+    setTimeout(scrollToPopup, 1000);
+    </script>
+    """
 
 def run(
     resources: Optional[List[Dict[str, Optional[str]]]] = None,
@@ -77,6 +122,8 @@ def run(
         st.session_state.show_popup = False
     if "popup_resource" not in st.session_state:
         st.session_state.popup_resource = None
+    if "should_scroll" not in st.session_state:
+        st.session_state.should_scroll = False
 
     # Prepare anchors
     processed = []
@@ -101,6 +148,8 @@ def run(
                     if st.sidebar.button(f"📋 {r['title']}", key=f"sidebar_{r['anchor']}", help="Click to view details"):
                         st.session_state.show_popup = True
                         st.session_state.popup_resource = r
+                        st.session_state.should_scroll = True
+                        st.rerun()
 
     st.markdown("---")
 
@@ -190,27 +239,22 @@ def run(
                 ):
                     st.session_state.show_popup = True
                     st.session_state.popup_resource = r
+                    st.session_state.should_scroll = True
+                    st.rerun()
         
         col_idx += 1
 
     # Display popup modal
     if st.session_state.show_popup and st.session_state.popup_resource:
-        # Add JavaScript for smooth scrolling to popup
-        st.markdown("""
-        <script>
-        setTimeout(function() {
-            const popup = document.querySelector('[data-testid="stMarkdownContainer"]:has-text("📋 Resource Details")');
-            if (popup) {
-                popup.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }, 100);
-        </script>
-        """, unsafe_allow_html=True)
+        # Add auto-scroll JavaScript when popup should be shown
+        if st.session_state.should_scroll:
+            st.markdown(_add_scroll_to_popup_js(), unsafe_allow_html=True)
+            st.session_state.should_scroll = False  # Reset scroll flag
         
         with st.container():
-            # Create prominent modal-like overlay with enhanced styling
+            # Add unique ID for targeting the popup
             st.markdown("""
-            <div style="
+            <div id="resource-popup-container" style="
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 padding: 20px;
                 border-radius: 15px;
@@ -245,6 +289,7 @@ def run(
                 if st.button("✖ Close", key="close_popup", help="Close resource details"):
                     st.session_state.show_popup = False
                     st.session_state.popup_resource = None
+                    st.session_state.should_scroll = False
                     st.rerun()
             
             # Enhanced information display with better styling
