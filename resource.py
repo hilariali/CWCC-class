@@ -57,7 +57,7 @@ def run(
     show_toc: bool = True,
     show_title: bool = True,
     title_text: str = "Resources Hub",
-    subtitle_text: str = "Titles deep-link to sections. Resources will be accessible through the directory system."
+    subtitle_text: str = "Click on section titles to view detailed information. Resources will be accessible through the directory system."
 ):
     """Render the Resources Hub page.
 
@@ -72,6 +72,12 @@ def run(
         if subtitle_text:
             st.caption(subtitle_text)
 
+    # Initialize session state for popup
+    if "show_popup" not in st.session_state:
+        st.session_state.show_popup = False
+    if "popup_resource" not in st.session_state:
+        st.session_state.popup_resource = None
+
     # Prepare anchors
     processed = []
     for item in data:
@@ -81,9 +87,9 @@ def run(
         i["anchor"] = _slugify(i["title"])
         processed.append(i)
 
-    # Sidebar TOC
+    # Sidebar TOC with popup functionality
     if show_toc:
-        st.sidebar.header("Jump to a Section")
+        st.sidebar.header("Resource Sections")
         by_group = {}
         for r in processed:
             grp = r.get("group", "Ungrouped")
@@ -91,44 +97,97 @@ def run(
         for group, items in by_group.items():
             with st.sidebar.expander(group, expanded=True):
                 for r in items:
-                    link = f"{base}#{r['anchor']}" if base else f"#{r['anchor']}"
-                    st.markdown(f"- [{r['title']}]({link})")
+                    # Create clickable button for each resource in sidebar
+                    if st.sidebar.button(f"📋 {r['title']}", key=f"sidebar_{r['anchor']}", help="Click to view details"):
+                        st.session_state.show_popup = True
+                        st.session_state.popup_resource = r
 
     st.markdown("---")
 
-    # Sections
+    # Sections with clickable headers
+    cols = st.columns([1, 1, 1])  # Create a 3-column layout for better organization
+    col_idx = 0
+    
     for r in processed:
         anchor = r["anchor"]
-        # Invisible anchor
+        # Invisible anchor for deep linking
         st.markdown(f'<div id="{anchor}"></div>', unsafe_allow_html=True)
-
-        # Title linked to its own deep link
-        section_link = f"{base}#{anchor}" if base else f"#{anchor}"
-        st.markdown(f"### [{r['title']}]({section_link})")
-
-        # Display description and placeholder text
-        desc = (r.get("description") or "").strip()
-        placeholder = (r.get("placeholder_text") or "").strip()
         
-        if desc and placeholder:
-            st.markdown(f"{desc}")
-            st.info(f"📍 {placeholder}")
-        elif desc and not placeholder:
-            st.markdown(desc)
-        elif placeholder and not desc:
-            st.info(f"📍 {placeholder}")
+        with cols[col_idx % 3]:
+            # Create a card-like container for each resource
+            with st.container():
+                st.markdown(f"""
+                <div style="
+                    border: 1px solid #e0e0e0; 
+                    border-radius: 10px; 
+                    padding: 15px; 
+                    margin: 10px 0; 
+                    background-color: #f8f9fa;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                ">
+                    <h4 style="margin-top: 0; color: #1f77b4;">{r['title']}</h4>
+                    <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
+                        Group: {r.get('group', 'Ungrouped')}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Clickable button to show popup
+                if st.button(f"🔍 View Details", key=f"main_{anchor}", help=f"Click to view details about {r['title']}"):
+                    st.session_state.show_popup = True
+                    st.session_state.popup_resource = r
         
-        # Display resource ID and page function for reference
-        resource_id = r.get("id", "")
-        page_function = r.get("page_function", "")
-        if resource_id or page_function:
-            with st.expander("🔧 Technical Info", expanded=False):
-                if resource_id:
-                    st.code(f"Resource ID: {resource_id}")
-                if page_function:
-                    st.code(f"Page Function: {page_function}")
+        col_idx += 1
 
-        st.divider()
+    # Display popup modal
+    if st.session_state.show_popup and st.session_state.popup_resource:
+        with st.container():
+            # Create modal-like overlay
+            st.markdown("---")
+            st.markdown("### 📋 Resource Details")
+            
+            resource = st.session_state.popup_resource
+            
+            # Close button
+            col1, col2 = st.columns([5, 1])
+            with col2:
+                if st.button("✖ Close", key="close_popup"):
+                    st.session_state.show_popup = False
+                    st.session_state.popup_resource = None
+                    st.rerun()
+            
+            with col1:
+                st.markdown(f"## {resource['title']}")
+            
+            # Display resource information
+            st.markdown(f"**Group:** {resource.get('group', 'Ungrouped')}")
+            
+            desc = (resource.get("description") or "").strip()
+            placeholder = (resource.get("placeholder_text") or "").strip()
+            
+            if desc:
+                st.markdown("**Description:**")
+                st.markdown(desc)
+            
+            if placeholder:
+                st.markdown("**Access Information:**")
+                st.info(f"📍 {placeholder}")
+            
+            # Technical information
+            resource_id = resource.get("id", "")
+            page_function = resource.get("page_function", "")
+            if resource_id or page_function:
+                with st.expander("🔧 Technical Information", expanded=False):
+                    if resource_id:
+                        st.code(f"Resource ID: {resource_id}")
+                    if page_function:
+                        st.code(f"Page Function: {page_function}")
+            
+            # Deep link
+            section_link = f"{base}#{resource['anchor']}" if base else f"#{resource['anchor']}"
+            st.markdown(f"**Direct Link:** [🔗 {resource['title']}]({section_link})")
+            
+            st.markdown("---")
 
 # Standalone execution
 if __name__ == "__main__":
