@@ -41,10 +41,35 @@ def list_languages_yt_dlp(video_id: str) -> dict:
 
 def try_list_transcripts_api(video_id: str, proxies: dict | None) -> dict:
     try:
-        ts_list = YouTubeTranscriptApi.list_transcripts(video_id, proxies=proxies)
+        # Create API instance with proxy configuration if provided
+        from youtube_transcript_api.proxies import ProxyConfig
+        proxy_config = ProxyConfig(proxies) if proxies else None
+        api = YouTubeTranscriptApi(proxy_config=proxy_config)
+        
+        ts_list = api.list(video_id)
         return {t.language_code: ("auto" if t.is_generated else "manual") for t in ts_list}
     except (TranscriptsDisabled, NoTranscriptFound, Exception):
         return {}
+
+def is_html_response(text: str) -> bool:
+    """
+    Detect if the response is HTML (e.g., Google error page) instead of transcript data.
+    """
+    if not text:
+        return False
+    
+    text_lower = text.strip().lower()
+    
+    # Check for HTML indicators
+    return (
+        text_lower.startswith('<html') or
+        '<html' in text_lower or
+        '<head>' in text_lower or
+        '<body>' in text_lower or
+        'automated queries' in text.lower() or
+        "we're sorry" in text.lower() or
+        '<div>' in text_lower
+    )
 
 def list_transcript_languages(video_id: str, proxy_list: list[str]) -> tuple[dict, dict | None]:
     st.info("Attempting to list languages via yt_dlp…")
@@ -64,7 +89,12 @@ def list_transcript_languages(video_id: str, proxy_list: list[str]) -> tuple[dic
         if langs:
             st.success(f"✓ Languages found via API proxy {p}")
             return langs, proxy_cfg
-    st.error("✗ Unable to list transcript languages (yt_dlp + API all failed)")
+    st.error("✗ Unable to list transcript languages - all methods failed. This may be due to:")
+    st.error("  • YouTube rate limiting (IP blocked)")
+    st.error("  • No transcripts available for this video")
+    st.error("  • Video is private or unavailable")
+    st.info("💡 Try using a different proxy or waiting before retrying")
+    return {}, None
     return {}, None
 
 def fetch_transcript_yt_dlp(video_id: str, lang: str) -> str:
@@ -90,6 +120,12 @@ def fetch_transcript_yt_dlp(video_id: str, lang: str) -> str:
                     return ""
             r = requests.get(vtt_url, timeout=10)
             vtt_text = r.text
+            
+            # Check if we got an HTML error page instead of VTT content
+            if is_html_response(vtt_text):
+                st.warning("⚠️ Received HTML error page (likely rate limited by YouTube)")
+                return ""
+            
             lines = []
             for row in vtt_text.splitlines():
                 if row.startswith("WEBVTT") or re.match(r"^\d\d:\d\d:\d\d\.\d\d\d -->", row):
@@ -101,8 +137,13 @@ def fetch_transcript_yt_dlp(video_id: str, lang: str) -> str:
 
 def try_fetch_transcript_api(video_id: str, lang: str, proxies: dict | None) -> str:
     try:
-        entries = YouTubeTranscriptApi.get_transcript(video_id, languages=[lang], proxies=proxies)
-        return "\n".join(e.get("text", "") for e in entries)
+        # Create API instance with proxy configuration if provided
+        from youtube_transcript_api.proxies import ProxyConfig
+        proxy_config = ProxyConfig(proxies) if proxies else None
+        api = YouTubeTranscriptApi(proxy_config=proxy_config)
+        
+        transcript = api.fetch(video_id, languages=[lang])
+        return "\n".join(entry.get("text", "") for entry in transcript)
     except (TranscriptsDisabled, NoTranscriptFound, Exception):
         return ""
 
@@ -124,7 +165,11 @@ def fetch_transcript_with_fallback(video_id: str, lang: str, proxy_list: list[st
         if text:
             st.success(f"✓ Fetched transcript via API proxy {p}")
             return text, proxy_cfg
-    st.error("✗ Unable to fetch transcript (yt_dlp + API all failed)")
+    st.error("✗ Unable to fetch transcript - all methods failed. This may be due to:")
+    st.error("  • YouTube rate limiting (IP blocked)")
+    st.error("  • No transcripts available for this video")
+    st.error("  • Video is private or unavailable")
+    st.info("💡 Try using a different proxy or waiting before retrying")
     return "", None
 
 def summarize_chunk(text: str, lang: str) -> str:
@@ -250,7 +295,12 @@ def run():
             st.session_state.used_proxy_for_langs = used_proxy
 
         if not st.session_state.langs:
-            st.error("No transcripts available—yt_dlp & API both failed, or IP blocked.")
+            st.error("No transcripts available - all methods failed.")
+            st.error("This may be due to:")
+            st.error("  • YouTube rate limiting (IP blocked)")
+            st.error("  • No transcripts available for this video")  
+            st.error("  • Video is private or unavailable")
+            st.info("💡 Try using a proxy or waiting before retrying")
         else:
             st.session_state.selected_lang = st.selectbox(
                 "Transcript language:", list(st.session_state.langs.keys()), index=0
@@ -266,7 +316,8 @@ def run():
                     st.session_state.transcript = text
                     st.session_state.used_proxy_for_transcript = used_proxy_trans
                     if not text:
-                        st.error("Failed to fetch transcript—yt_dlp & API both failed.")
+                        st.error("Failed to fetch transcript - all methods failed.")
+                        st.info("💡 This may be due to rate limiting. Try using a proxy or waiting before retrying.")
                     else:
                         st.session_state.transcript_fetched = True
 
