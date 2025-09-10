@@ -113,9 +113,51 @@ def run(
     base = APP_BASE_URL if app_base_url is None else app_base_url
 
     if show_title:
-        st.title(title_text)
-        if subtitle_text:
-            st.caption(subtitle_text)
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        ">
+            <h1 style="
+                color: white;
+                margin: 0;
+                font-weight: 700;
+                font-size: 36px;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            ">{title_text}</h1>
+            {f'<p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">{subtitle_text}</p>' if subtitle_text else ''}
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Add custom CSS for better button styling
+        st.markdown("""
+        <style>
+        .stButton > button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .stButton > button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            background: linear-gradient(135deg, #5a6fd8 0%, #6b5b95 100%);
+        }
+        .stButton > button:active {
+            transform: translateY(0);
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
     # Initialize session state for popup
     if "show_popup" not in st.session_state:
@@ -165,82 +207,89 @@ def run(
         with cols[col_idx % 3]:
             # Create a card-like container for each resource with enhanced styling
             with st.container():
-                st.markdown(f"""
-                <div style="
-                    border: 2px solid #e3f2fd; 
-                    border-radius: 15px; 
-                    padding: 20px; 
-                    margin: 15px 5px; 
-                    background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                    transition: transform 0.2s ease, box-shadow 0.2s ease;
-                    cursor: pointer;
-                ">
-                    <div style="
-                        display: flex;
-                        align-items: center;
-                        margin-bottom: 10px;
-                    ">
-                        <div style="
-                            width: 40px;
-                            height: 40px;
-                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                            border-radius: 50%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            margin-right: 15px;
-                        ">
-                            <span style="color: white; font-size: 18px;">📋</span>
-                        </div>
-                        <h4 style="margin: 0; color: #1565c0; font-weight: 600;">{r['title']}</h4>
-                    </div>
-                    <div style="
-                        background: rgba(255,255,255,0.8);
-                        padding: 8px 12px;
-                        border-radius: 20px;
-                        margin-bottom: 15px;
-                        display: inline-block;
-                    ">
-                        <small style="color: #666; font-weight: 500;">
-                            🏢 {r.get('group', 'Ungrouped')}
-                        </small>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Enhanced clickable button with better styling
-                st.markdown("""
-                <style>
-                .stButton > button {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    border-radius: 25px;
-                    padding: 12px 24px;
-                    font-weight: 600;
-                    font-size: 14px;
-                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-                    transition: all 0.3s ease;
-                    width: 100%;
-                }
-                .stButton > button:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-                }
-                </style>
-                """, unsafe_allow_html=True)
-                
-                if st.button(
-                    f"🔍 View Details", 
-                    key=f"main_{anchor}", 
+                # Clickable title area that triggers popup
+                title_clicked = st.button(
+                    f"📋 {r['title']}", 
+                    key=f"title_{anchor}",
                     help=f"Click to view details about {r['title']}",
                     use_container_width=True
-                ):
+                )
+                
+                if title_clicked:
                     st.session_state.show_popup = True
                     st.session_state.popup_resource = r
                     st.session_state.should_scroll = True
                     st.rerun()
+                
+                # Enhanced card design with proper markdown
+                st.markdown(f"""
+                <div style="
+                    border: 2px solid #e3f2fd; 
+                    border-radius: 15px; 
+                    padding: 15px; 
+                    margin: 10px 5px; 
+                    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+                    transition: all 0.3s ease;
+                    position: relative;
+                    overflow: hidden;
+                ">
+                    <div style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 4px;
+                        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                    "></div>
+                    
+                    <div style="
+                        background: rgba(102, 126, 234, 0.1);
+                        padding: 8px 12px;
+                        border-radius: 20px;
+                        margin-bottom: 12px;
+                        display: inline-block;
+                        border: 1px solid rgba(102, 126, 234, 0.2);
+                    ">
+                        <small style="
+                            color: #4c6ef5; 
+                            font-weight: 600;
+                            font-size: 11px;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        ">
+                            🏢 {r.get('group', 'Ungrouped')}
+                        </small>
+                    </div>
+                    
+                    <div style="
+                        color: #495057;
+                        font-size: 13px;
+                        line-height: 1.4;
+                        margin-top: 8px;
+                    ">
+                        {(r.get('description', 'Click to view more details') or 'Click to view more details')[:80]}{'...' if len(r.get('description', '')) > 80 else ''}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Add a small hint that the card is clickable
+                st.markdown("""
+                <div style="
+                    text-align: center;
+                    margin-top: 8px;
+                    padding: 6px;
+                    background: rgba(102, 126, 234, 0.05);
+                    border-radius: 8px;
+                    border: 1px dashed rgba(102, 126, 234, 0.3);
+                ">
+                    <small style="
+                        color: #6c757d;
+                        font-style: italic;
+                        font-size: 11px;
+                    ">💡 Click title above for details</small>
+                </div>
+                """, unsafe_allow_html=True)
         
         col_idx += 1
 
@@ -255,33 +304,74 @@ def run(
             # Add unique ID for targeting the popup
             st.markdown("""
             <div id="resource-popup-container" style="
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                padding: 20px;
-                border-radius: 15px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                margin: 20px 0;
-                border: 3px solid #4CAF50;
+                background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+                padding: 25px;
+                border-radius: 20px;
+                box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+                margin: 25px 0;
+                border: 2px solid #e3f2fd;
+                position: relative;
+                overflow: hidden;
             ">
-                <h2 style="color: white; text-align: center; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
-                    📋 Resource Details
-                </h2>
+                <div style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 6px;
+                    background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #4ecdc4 100%);
+                "></div>
+                
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 20px;
+                ">
+                    <div style="
+                        width: 50px;
+                        height: 50px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-right: 15px;
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                    ">
+                        <span style="color: white; font-size: 24px;">📋</span>
+                    </div>
+                    <h2 style="
+                        color: #2c3e50; 
+                        margin: 0; 
+                        font-weight: 700;
+                        font-size: 28px;
+                        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    ">Resource Details</h2>
+                </div>
             </div>
             """, unsafe_allow_html=True)
             
             resource = st.session_state.popup_resource
             
             # Enhanced layout with better visual hierarchy
-            col1, col2, col3 = st.columns([4, 1, 1])
+            col1, col2, col3 = st.columns([5, 1, 1])
             with col1:
                 st.markdown(f"""
                 <div style="
-                    background: #f8f9fa;
-                    padding: 15px;
-                    border-radius: 10px;
-                    border-left: 5px solid #007bff;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    padding: 20px;
+                    border-radius: 15px;
                     margin: 10px 0;
+                    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
                 ">
-                    <h2 style="color: #007bff; margin: 0;">{resource['title']}</h2>
+                    <h2 style="
+                        color: white; 
+                        margin: 0;
+                        font-weight: 700;
+                        font-size: 24px;
+                        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                    ">🏷️ {resource['title']}</h2>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -295,13 +385,40 @@ def run(
             # Enhanced information display with better styling
             st.markdown(f"""
             <div style="
-                background: #e3f2fd;
-                padding: 15px;
-                border-radius: 8px;
-                margin: 10px 0;
-                border: 1px solid #bbdefb;
+                background: linear-gradient(135deg, #e8f4fd 0%, #ffffff 100%);
+                padding: 18px;
+                border-radius: 12px;
+                margin: 15px 0;
+                border-left: 5px solid #667eea;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             ">
-                <strong style="color: #1976d2;">Group:</strong> {resource.get('group', 'Ungrouped')}
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 8px;
+                ">
+                    <span style="
+                        font-size: 18px;
+                        margin-right: 8px;
+                    ">🏢</span>
+                    <strong style="
+                        color: #495057;
+                        font-size: 16px;
+                    ">Group:</strong>
+                </div>
+                <div style="
+                    background: rgba(102, 126, 234, 0.1);
+                    padding: 8px 15px;
+                    border-radius: 20px;
+                    display: inline-block;
+                    border: 1px solid rgba(102, 126, 234, 0.2);
+                ">
+                    <span style="
+                        color: #4c6ef5;
+                        font-weight: 600;
+                        font-size: 14px;
+                    ">{resource.get('group', 'Ungrouped')}</span>
+                </div>
             </div>
             """, unsafe_allow_html=True)
             
@@ -309,55 +426,153 @@ def run(
             placeholder = (resource.get("placeholder_text") or "").strip()
             
             if desc:
-                st.markdown("**Description:**")
                 st.markdown(f"""
                 <div style="
-                    background: #fff3e0;
-                    padding: 15px;
-                    border-radius: 8px;
-                    margin: 10px 0;
-                    border-left: 4px solid #ff9800;
+                    background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%);
+                    padding: 20px;
+                    border-radius: 12px;
+                    margin: 15px 0;
+                    border-left: 5px solid #ffa726;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
                 ">
-                    {desc}
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 12px;
+                    ">
+                        <span style="
+                            font-size: 20px;
+                            margin-right: 10px;
+                        ">📝</span>
+                        <h3 style="
+                            color: #e65100;
+                            margin: 0;
+                            font-weight: 600;
+                            font-size: 18px;
+                        ">Description</h3>
+                    </div>
+                    <div style="
+                        color: #424242;
+                        font-size: 15px;
+                        line-height: 1.6;
+                        background: rgba(255, 255, 255, 0.8);
+                        padding: 15px;
+                        border-radius: 8px;
+                        border: 1px solid rgba(255, 167, 38, 0.2);
+                    ">
+                        {desc}
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
             
             if placeholder:
-                st.markdown("**Access Information:**")
-                st.info(f"📍 {placeholder}")
+                st.markdown(f"""
+                <div style="
+                    background: linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%);
+                    padding: 20px;
+                    border-radius: 12px;
+                    margin: 15px 0;
+                    border-left: 5px solid #4caf50;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+                ">
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 12px;
+                    ">
+                        <span style="
+                            font-size: 20px;
+                            margin-right: 10px;
+                        ">🔑</span>
+                        <h3 style="
+                            color: #2e7d32;
+                            margin: 0;
+                            font-weight: 600;
+                            font-size: 18px;
+                        ">Access Information</h3>
+                    </div>
+                    <div style="
+                        background: rgba(76, 175, 80, 0.1);
+                        padding: 15px;
+                        border-radius: 8px;
+                        border: 1px solid rgba(76, 175, 80, 0.3);
+                        color: #2e7d32;
+                        font-size: 15px;
+                        line-height: 1.5;
+                        display: flex;
+                        align-items: center;
+                    ">
+                        <span style="
+                            font-size: 18px;
+                            margin-right: 10px;
+                        ">📍</span>
+                        {placeholder}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
             
-            # Technical information
+            # Technical information with enhanced styling
             resource_id = resource.get("id", "")
             page_function = resource.get("page_function", "")
             if resource_id or page_function:
                 with st.expander("🔧 Technical Information", expanded=False):
+                    st.markdown("""
+                    <div style="
+                        background: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 8px;
+                        margin: 10px 0;
+                    ">
+                    """, unsafe_allow_html=True)
                     if resource_id:
-                        st.code(f"Resource ID: {resource_id}")
+                        st.code(f"Resource ID: {resource_id}", language="text")
                     if page_function:
-                        st.code(f"Page Function: {page_function}")
+                        st.code(f"Page Function: {page_function}", language="text")
+                    st.markdown("</div>", unsafe_allow_html=True)
             
-            # Deep link with enhanced styling
+            # Enhanced direct link section
             section_link = f"{base}#{resource['anchor']}" if base else f"#{resource['anchor']}"
             st.markdown(f"""
             <div style="
-                background: #e8f5e8;
-                padding: 15px;
-                border-radius: 8px;
-                margin: 10px 0;
-                border: 1px solid #4caf50;
+                background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+                padding: 20px;
+                border-radius: 12px;
+                margin: 20px 0;
+                border: 2px solid #2196f3;
                 text-align: center;
+                box-shadow: 0 6px 20px rgba(33, 150, 243, 0.2);
             ">
-                <strong>Direct Link:</strong> 
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 10px;
+                ">
+                    <span style="
+                        font-size: 20px;
+                        margin-right: 10px;
+                    ">🔗</span>
+                    <h3 style="
+                        color: #1976d2;
+                        margin: 0;
+                        font-weight: 600;
+                    ">Direct Link</h3>
+                </div>
                 <a href="{section_link}" style="
-                    color: #2e7d32;
+                    color: white;
                     text-decoration: none;
                     font-weight: bold;
-                    background: #4caf50;
-                    color: white;
-                    padding: 8px 16px;
-                    border-radius: 20px;
-                    margin-left: 10px;
-                ">🔗 {resource['title']}</a>
+                    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+                    padding: 12px 24px;
+                    border-radius: 25px;
+                    display: inline-block;
+                    margin-top: 10px;
+                    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(33, 150, 243, 0.6)'"
+                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(33, 150, 243, 0.4)'">
+                    🚀 Go to {resource['title']}
+                </a>
             </div>
             """, unsafe_allow_html=True)
             
