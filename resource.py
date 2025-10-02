@@ -186,11 +186,13 @@ def run(
         for group, items in by_group.items():
             with st.sidebar.expander(group, expanded=True):
                 for r in items:
-                    # Create clickable button for each resource in sidebar
-                    if st.sidebar.button(f"📋 {r['title']}", key=f"sidebar_{r['anchor']}", help="Click to view details"):
+                    # Create clickable button for each resource in sidebar with enhanced feedback
+                    if st.sidebar.button(f"� {r['titlee']}", key=f"sidebar_{r['anchor']}", help="🚀 Click to view detailed information", use_container_width=True):
                         st.session_state.show_popup = True
                         st.session_state.popup_resource = r
                         st.session_state.should_scroll = True
+                        # Show feedback in sidebar
+                        st.sidebar.success(f"✨ Opening {r['title'][:20]}...")
                         st.rerun()
 
     st.markdown("---")
@@ -207,11 +209,11 @@ def run(
         with cols[col_idx % 3]:
             # Create a card-like container for each resource with enhanced styling
             with st.container():
-                # Clickable title area that triggers popup
+                # Clickable title area that triggers popup with enhanced visual feedback
                 title_clicked = st.button(
                     f"📋 {r['title']}", 
                     key=f"title_{anchor}",
-                    help=f"Click to view details about {r['title']}",
+                    help=f"🔍 Click to view detailed information about {r['title']}",
                     use_container_width=True
                 )
                 
@@ -219,6 +221,8 @@ def run(
                     st.session_state.show_popup = True
                     st.session_state.popup_resource = r
                     st.session_state.should_scroll = True
+                    # Add a brief success message
+                    st.success(f"✨ Loading details for {r['title']}...")
                     st.rerun()
                 
                 # Enhanced card design with proper markdown
@@ -235,56 +239,127 @@ def run(
                 """
                 st.markdown(card_html, unsafe_allow_html=True)
                 
-                # Add a small hint that the card is clickable
+                # Enhanced clickable hint with animation
                 hint_html = """
-                <div style="text-align: center; margin-top: 8px; padding: 6px; background: rgba(102, 126, 234, 0.05); border-radius: 8px; border: 1px dashed rgba(102, 126, 234, 0.3);">
-                    <small style="color: #6c757d; font-style: italic; font-size: 11px;">💡 Click title above for details</small>
+                <div style="text-align: center; margin-top: 10px; padding: 8px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%); border-radius: 12px; border: 1px dashed rgba(102, 126, 234, 0.4); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)'; this.style.transform='scale(1)'">
+                    <small style="color: #495057; font-weight: 500; font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                        <span style="margin-right: 5px; animation: pulse 2s infinite;">🔍</span>
+                        Click title above for detailed information
+                    </small>
                 </div>
+                <style>
+                @keyframes pulse {
+                    0% { opacity: 1; }
+                    50% { opacity: 0.6; }
+                    100% { opacity: 1; }
+                }
+                </style>
                 """
                 st.markdown(hint_html, unsafe_allow_html=True)
         
         col_idx += 1
 
-    # Display popup modal
+    # Display popup modal with enhanced overlay effect
     if st.session_state.show_popup and st.session_state.popup_resource:
+        # Show notification that popup is open
+        st.info("📋 **Resource Details Panel** - Scroll down to view complete information", icon="ℹ️")
+        
         # Add auto-scroll JavaScript when popup should be shown
         if st.session_state.should_scroll:
             st.markdown(_add_scroll_to_popup_js(), unsafe_allow_html=True)
             st.session_state.should_scroll = False  # Reset scroll flag
         
+        # Add overlay effect and enhanced popup styling
+        overlay_css = """
+        <style>
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .popup-container {
+            position: relative;
+            z-index: 1000;
+            animation: slideIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
+            50% { box-shadow: 0 20px 50px rgba(102, 126, 234, 0.2); }
+            100% { box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
+        }
+        </style>
+        """
+        st.markdown(overlay_css, unsafe_allow_html=True)
+        
         with st.container():
-            # Add unique ID for targeting the popup
+            # Enhanced popup header with animation classes
             popup_header_html = """
-            <div id="resource-popup-container" style="background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%); padding: 25px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); margin: 25px 0; border: 2px solid #e3f2fd; position: relative; overflow: hidden;">
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #4ecdc4 100%);"></div>
-                <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
-                        <span style="color: white; font-size: 24px;">📋</span>
+            <div id="resource-popup-container" class="popup-container pulse-animation" style="background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%); padding: 30px; border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); margin: 30px 0; border: 3px solid #e3f2fd; position: relative; overflow: hidden; backdrop-filter: blur(10px);">
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 8px; background: linear-gradient(90deg, #667eea 0%, #764ba2 30%, #4ecdc4 60%, #ff6b6b 100%); animation: shimmer 3s ease-in-out infinite;"></div>
+                <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 25px;">
+                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 20px; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); animation: bounce 2s infinite;">
+                        <span style="color: white; font-size: 28px;">📋</span>
                     </div>
-                    <h2 style="color: #2c3e50; margin: 0; font-weight: 700; font-size: 28px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Resource Details</h2>
+                    <h2 style="color: #2c3e50; margin: 0; font-weight: 700; font-size: 32px; text-shadow: 0 3px 6px rgba(0,0,0,0.1);">Resource Details</h2>
                 </div>
             </div>
+            <style>
+            @keyframes shimmer {
+                0% { background-position: -200% 0; }
+                100% { background-position: 200% 0; }
+            }
+            @keyframes bounce {
+                0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+                40% { transform: translateY(-10px); }
+                60% { transform: translateY(-5px); }
+            }
+            </style>
             """
             st.markdown(popup_header_html, unsafe_allow_html=True)
             
             resource = st.session_state.popup_resource
             
-            # Enhanced layout with better visual hierarchy
-            col1, col2, col3 = st.columns([5, 1, 1])
+            # Enhanced layout with better visual hierarchy and improved close button
+            col1, col2, col3 = st.columns([6, 1, 2])
             with col1:
                 header_html = f"""
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 15px; margin: 10px 0; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);">
-                    <h2 style="color: white; margin: 0; font-weight: 700; font-size: 24px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">🏷️ {resource['title']}</h2>
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 18px; margin: 15px 0; box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4); position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 0; right: 0; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); border-radius: 50%; transform: translate(30px, -30px);"></div>
+                    <h2 style="color: white; margin: 0; font-weight: 700; font-size: 26px; text-shadow: 0 3px 6px rgba(0,0,0,0.3); position: relative; z-index: 1;">🏷️ {resource['title']}</h2>
                 </div>
                 """
                 st.markdown(header_html, unsafe_allow_html=True)
             
             with col3:
-                if st.button("✖ Close", key="close_popup", help="Close resource details"):
+                # Enhanced close button with better styling
+                close_button_html = """
+                <div style="text-align: right; margin: 15px 0;">
+                """
+                st.markdown(close_button_html, unsafe_allow_html=True)
+                
+                if st.button("✖ Close Details", key="close_popup", help="Close resource details", type="secondary"):
                     st.session_state.show_popup = False
                     st.session_state.popup_resource = None
                     st.session_state.should_scroll = False
                     st.rerun()
+                
+                st.markdown("</div>", unsafe_allow_html=True)
             
             # Enhanced information display with better styling  
             group_html = f"""
