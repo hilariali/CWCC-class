@@ -138,28 +138,7 @@ def run(
         i = _add_dummy_info(i)  # Add dummy info where needed
         processed.append(i)
 
-    if show_title:
-        st.markdown(f"""
-        <div style="
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 30px;
-            border-radius: 20px;
-            margin: 20px 0;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        ">
-            <h1 style="
-                color: white;
-                margin: 0;
-                font-weight: 700;
-                font-size: 36px;
-                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            ">{title_text}</h1>
-            {f'<p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">{subtitle_text}</p>' if subtitle_text else ''}
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Display info card at the very top if resource is selected
+    # *** DISPLAY INFO CARD AT THE VERY TOP FIRST ***
     if st.session_state.selected_resource:
         resource = st.session_state.selected_resource
         
@@ -255,17 +234,40 @@ def run(
 
         # Add extra spacing after info card
         st.markdown("<br>", unsafe_allow_html=True)
-    else:
-        # Show helpful message when no resource is selected
+
+    # *** NOW SHOW THE TITLE AFTER THE INFO CARD ***
+    if show_title:
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        ">
+            <h1 style="
+                color: white;
+                margin: 0;
+                font-weight: 700;
+                font-size: 36px;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            ">{title_text}</h1>
+            {f'<p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">{subtitle_text}</p>' if subtitle_text else ''}
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Show helpful message when no resource is selected (only if no resource selected)
+    if not st.session_state.selected_resource:
         st.markdown("""
         <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
                     padding: 20px; border-radius: 15px; margin: 20px 0; 
                     border: 2px dashed #dee2e6; text-align: center;">
             <h3 style="color: #6c757d; margin: 0 0 10px 0; font-weight: 600;">
-                👆 Select a Resource Above
+                👇 Select a Resource Below
             </h3>
             <p style="color: #868e96; margin: 0; font-size: 14px;">
-                Click on any resource title below to view detailed information in this area
+                Click on any resource title below to view detailed information at the top of this page
             </p>
         </div>
         """, unsafe_allow_html=True)
