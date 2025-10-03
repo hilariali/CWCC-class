@@ -138,13 +138,44 @@ def run(
         i = _add_dummy_info(i)  # Add dummy info where needed
         processed.append(i)
 
-    # *** DISPLAY INFO CARD AT THE VERY TOP FIRST ***
+    # *** SHOW THE TITLE FIRST ***
+    if show_title:
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        ">
+            <h1 style="
+                color: white;
+                margin: 0;
+                font-weight: 700;
+                font-size: 36px;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            ">{title_text}</h1>
+            {f'<p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">{subtitle_text}</p>' if subtitle_text else ''}
+        </div>
+        """, unsafe_allow_html=True)
+
+    # *** DISPLAY INFO CARD RIGHT AFTER TITLE ***
     if st.session_state.selected_resource:
         resource = st.session_state.selected_resource
         
-        # Enhanced info card container at the top
+        # Add scroll to top JavaScript
         st.markdown("""
-        <div style="background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%); 
+        <script>
+        setTimeout(function() {
+            window.parent.document.querySelector('[data-testid="stAppViewContainer"]').scrollTop = 0;
+        }, 100);
+        </script>
+        """, unsafe_allow_html=True)
+        
+        # Enhanced info card container with ID for targeting
+        st.markdown("""
+        <div id="info-card-container" style="background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%); 
                     padding: 30px; border-radius: 25px; margin: 25px 0; 
                     border: 3px solid #4a90e2; box-shadow: 0 20px 50px rgba(74, 144, 226, 0.2);
                     animation: slideDown 0.6s ease-out; position: relative; overflow: hidden;">
@@ -234,31 +265,8 @@ def run(
 
         # Add extra spacing after info card
         st.markdown("<br>", unsafe_allow_html=True)
-
-    # *** NOW SHOW THE TITLE AFTER THE INFO CARD ***
-    if show_title:
-        st.markdown(f"""
-        <div style="
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 30px;
-            border-radius: 20px;
-            margin: 20px 0;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        ">
-            <h1 style="
-                color: white;
-                margin: 0;
-                font-weight: 700;
-                font-size: 36px;
-                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            ">{title_text}</h1>
-            {f'<p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">{subtitle_text}</p>' if subtitle_text else ''}
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Show helpful message when no resource is selected (only if no resource selected)
-    if not st.session_state.selected_resource:
+    else:
+        # Show helpful message when no resource is selected
         st.markdown("""
         <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
                     padding: 20px; border-radius: 15px; margin: 20px 0; 
@@ -267,7 +275,7 @@ def run(
                 👇 Select a Resource Below
             </h3>
             <p style="color: #868e96; margin: 0; font-size: 14px;">
-                Click on any resource title below to view detailed information at the top of this page
+                Click on any resource title below to view detailed information right here
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -283,7 +291,7 @@ def run(
         for group, items in by_group.items():
             with st.sidebar.expander(f"🏢 {group}", expanded=True):
                 for r in items:
-                    if st.sidebar.button(r['title'], key=f"sidebar_{r['anchor']}", use_container_width=True):
+                    if st.sidebar.button(r['title'], key=f"sidebar_{r['anchor']}", use_container_width=True, help="Click to view details - will scroll to top"):
                         st.session_state.selected_resource = r
                         st.rerun()
 
@@ -311,11 +319,11 @@ def run(
         cols = st.columns(2)
         for idx, resource in enumerate(items):
             with cols[idx % 2]:
-                # Clean title button
+                # Clean title button with auto-scroll
                 if st.button(
                     f"📄 {resource['title']}", 
                     key=f"main_{resource['anchor']}",
-                    help=f"Click to view details about {resource['title']}",
+                    help=f"Click to view details about {resource['title']} - will scroll to top automatically",
                     use_container_width=True
                 ):
                     st.session_state.selected_resource = resource
