@@ -124,6 +124,20 @@ def run(
     data = resources if resources is not None else RESOURCES
     base = APP_BASE_URL if app_base_url is None else app_base_url
 
+    # Initialize session state
+    if "selected_resource" not in st.session_state:
+        st.session_state.selected_resource = None
+
+    # Prepare resources with dummy info
+    processed = []
+    for item in data:
+        if not item or not item.get("title"):
+            continue
+        i = dict(item)
+        i["anchor"] = _slugify(i["title"])
+        i = _add_dummy_info(i)  # Add dummy info where needed
+        processed.append(i)
+
     if show_title:
         st.markdown(f"""
         <div style="
@@ -145,53 +159,51 @@ def run(
         </div>
         """, unsafe_allow_html=True)
 
-    # Initialize session state
-    if "selected_resource" not in st.session_state:
-        st.session_state.selected_resource = None
-
-    # Prepare resources with dummy info
-    processed = []
-    for item in data:
-        if not item or not item.get("title"):
-            continue
-        i = dict(item)
-        i["anchor"] = _slugify(i["title"])
-        i = _add_dummy_info(i)  # Add dummy info where needed
-        processed.append(i)
-
-    # Display info card at top if resource is selected
+    # Display info card at the very top if resource is selected
     if st.session_state.selected_resource:
         resource = st.session_state.selected_resource
         
-        # Info card container
+        # Enhanced info card container at the top
         st.markdown("""
-        <div style="background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%); 
-                    padding: 25px; border-radius: 20px; margin: 20px 0; 
-                    border: 2px solid #e3f2fd; box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-                    animation: slideDown 0.5s ease-out;">
+        <div style="background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%); 
+                    padding: 30px; border-radius: 25px; margin: 25px 0; 
+                    border: 3px solid #4a90e2; box-shadow: 0 20px 50px rgba(74, 144, 226, 0.2);
+                    animation: slideDown 0.6s ease-out; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 6px; 
+                        background: linear-gradient(90deg, #4a90e2 0%, #667eea 50%, #764ba2 100%);"></div>
         </div>
         <style>
         @keyframes slideDown {
-            from { transform: translateY(-20px); opacity: 0; }
+            from { transform: translateY(-30px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
         </style>
         """, unsafe_allow_html=True)
         
-        # Header with close button
-        col1, col2 = st.columns([8, 1])
+        # Enhanced header with close button
+        col1, col2 = st.columns([9, 1])
         with col1:
             st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                        padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                <h2 style="color: white; margin: 0; font-weight: 700; font-size: 24px;">
+            <div style="background: linear-gradient(135deg, #4a90e2 0%, #667eea 50%, #764ba2 100%); 
+                        padding: 25px; border-radius: 18px; margin-bottom: 25px; 
+                        box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3); position: relative; overflow: hidden;">
+                <div style="position: absolute; top: 0; right: 0; width: 80px; height: 80px; 
+                            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%); 
+                            border-radius: 50%; transform: translate(20px, -20px);"></div>
+                <h2 style="color: white; margin: 0; font-weight: 700; font-size: 28px; 
+                           text-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative; z-index: 1;">
                     📋 {resource['title']}
                 </h2>
+                <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px; 
+                          position: relative; z-index: 1;">
+                    ✨ Resource Details - Click close (✖) to return to list
+                </p>
             </div>
             """, unsafe_allow_html=True)
         
         with col2:
-            if st.button("✖", key="close_info", help="Close info card"):
+            st.markdown("<br>", unsafe_allow_html=True)  # Add some spacing
+            if st.button("✖ Close", key="close_info", help="Close info card and return to resource list"):
                 st.session_state.selected_resource = None
                 st.rerun()
         
@@ -241,7 +253,22 @@ def run(
             if st.button("📚 View Documentation", key="view_docs", use_container_width=True):
                 st.info("Documentation will be available in the school portal system.")
 
-        st.markdown("---")
+        # Add extra spacing after info card
+        st.markdown("<br>", unsafe_allow_html=True)
+    else:
+        # Show helpful message when no resource is selected
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+                    padding: 20px; border-radius: 15px; margin: 20px 0; 
+                    border: 2px dashed #dee2e6; text-align: center;">
+            <h3 style="color: #6c757d; margin: 0 0 10px 0; font-weight: 600;">
+                👆 Select a Resource Above
+            </h3>
+            <p style="color: #868e96; margin: 0; font-size: 14px;">
+                Click on any resource title below to view detailed information in this area
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
     # Sidebar with grouped resources
     if show_toc:
