@@ -51,50 +51,66 @@ def _slugify(text: str) -> str:
     s = re.sub(r"\s+", "-", s).strip("-")
     return s
 
-def _add_scroll_to_popup_js():
-    """Add JavaScript to automatically scroll to popup when it appears"""
-    return """
-    <script>
-    function scrollToPopup() {
-        setTimeout(function() {
-            // Look for the popup container
-            const popupElements = window.parent.document.querySelectorAll('[data-testid="stMarkdown"]');
-            let popupFound = false;
-            
-            for (let element of popupElements) {
-                if (element.innerHTML.includes('📋 Resource Details')) {
-                    element.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start',
-                        inline: 'nearest'
-                    });
-                    popupFound = true;
-                    break;
-                }
-            }
-            
-            // Alternative method - scroll to bottom if popup not found via content
-            if (!popupFound) {
-                const containers = window.parent.document.querySelectorAll('[data-testid="stVerticalBlock"]');
-                if (containers.length > 0) {
-                    const lastContainer = containers[containers.length - 1];
-                    lastContainer.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start' 
-                    });
-                }
-            }
-        }, 200);
+def _add_dummy_info(resource):
+    """Add dummy information to resources that lack detailed info"""
+    dummy_descriptions = {
+        "venue-booking-form": "Complete online form to reserve school facilities including auditorium, gymnasium, classrooms, and meeting rooms. Requires advance booking and approval.",
+        "facility-report-form": "Report maintenance issues, safety concerns, or equipment malfunctions across campus facilities. Includes priority levels and tracking system.",
+        "guest-parking-form": "Register visitor vehicles for campus access. Includes temporary parking permits and security clearance procedures.",
+        "campus-floor-plan": "Interactive digital map showing building layouts, room numbers, emergency exits, and accessibility features across all campus facilities.",
+        "staff-seating-plan": "Current seating arrangements for faculty and administrative staff. Updated regularly to reflect organizational changes.",
+        "classroom-seating-chart": "Student seating arrangements by class and subject. Includes special accommodations and accessibility considerations.",
+        "misbehaviour-form": "Disciplinary action form for student conduct issues. Covers uniform violations, behavioral incidents, and corrective measures.",
+        "teacher-duty-list": "Weekly rotation schedule for teacher supervision duties including morning assembly, lunch periods, and after-school activities.",
+        "morning-assembly": "Daily announcements, student recognition, and important school communications. Includes student ID card issue tracking.",
+        "attendance-record": "Comprehensive student attendance tracking system with behavioral notes and parent communication logs.",
+        "class-committee-list": "Student leadership positions and class representatives for the current academic term.",
+        "credit-warning-form": "Academic performance tracking and intervention system. Requires form teacher consultation before submission.",
+        "referral-form": "Student counseling and social work referral system for academic, behavioral, or personal support needs.",
+        "class-building-materials": "Educational resources, supplies, and materials available for classroom activities and projects.",
+        "gd-handbook": "Comprehensive guide covering school policies, disciplinary procedures, and student support services.",
+        "conduct-evaluation": "Digital assessment system for student behavior and character development tracking.",
+        "post-exam-activities": "Enrichment programs and activities scheduled during post-examination periods.",
+        "ramadan-list": "Special scheduling and accommodations for Muslim students during the holy month of Ramadan.",
+        "weekly-assembly": "Structured weekly gatherings for school announcements, presentations, and community building activities.",
+        "class-teachers": "Directory of homeroom teachers with contact information and class assignments.",
+        "canva-tool": "Professional design platform for creating educational materials, presentations, and visual content.",
+        "filmora-tool": "Video editing software for creating educational content, presentations, and multimedia projects."
     }
     
-    // Execute scroll function
-    scrollToPopup();
+    dummy_access_info = {
+        "venue-booking-form": "Access through school portal → Facilities → Booking System. Requires staff login credentials and department approval.",
+        "facility-report-form": "Available via maintenance portal or contact facilities management directly. Emergency issues: call ext. 2345.",
+        "guest-parking-form": "Submit 24 hours in advance through security office. Include visitor details and purpose of visit.",
+        "campus-floor-plan": "Available on school website → Campus Info → Interactive Map. Mobile app also available for download.",
+        "staff-seating-plan": "Updated monthly on staff portal → Resources → Office Layout. Contact HR for changes or updates.",
+        "classroom-seating-chart": "Access through teacher portal → Class Management → Seating Arrangements. Updated each semester.",
+        "misbehaviour-form": "Available in teacher portal → Student Affairs → Disciplinary Forms. Requires supervisor approval.",
+        "teacher-duty-list": "Posted weekly on staff bulletin board and teacher portal → Schedules → Duty Roster.",
+        "morning-assembly": "Daily updates posted on school portal → Announcements. Student ID issues tracked in student affairs system.",
+        "attendance-record": "Access through student information system → Attendance → Class Records. Real-time updates available.",
+        "class-committee-list": "Updated each term on school portal → Student Life → Leadership. Elections held quarterly.",
+        "credit-warning-form": "Available in academic portal → Student Progress → Intervention Forms. Requires form teacher consultation.",
+        "referral-form": "Contact student counseling office directly or submit through student affairs portal → Support Services.",
+        "class-building-materials": "Inventory available through supplies portal → Educational Resources. Request forms available online.",
+        "gd-handbook": "Digital version available on school website → Student Resources → Policies. Print copies in main office.",
+        "conduct-evaluation": "Access through student portal → Character Development → Assessment Tools. Updated system launching soon.",
+        "post-exam-activities": "Schedule published on school calendar → Events → Academic Periods. Registration opens 2 weeks prior.",
+        "ramadan-list": "Special schedules available through student affairs → Religious Accommodations. Updated annually.",
+        "weekly-assembly": "Schedule and topics posted on school calendar → Events → Weekly Programs. Attendance mandatory.",
+        "class-teachers": "Directory available on school portal → Staff → Faculty Contacts. Updated each semester.",
+        "canva-tool": "Login credentials available from IT department. Training sessions offered monthly.",
+        "filmora-tool": "Software installed on media lab computers. License details available from IT support."
+    }
     
-    // Also execute on any state changes
-    setTimeout(scrollToPopup, 500);
-    setTimeout(scrollToPopup, 1000);
-    </script>
-    """
+    # Add dummy info if missing
+    if not resource.get("description") or len(resource.get("description", "").strip()) < 10:
+        resource["description"] = dummy_descriptions.get(resource["id"], "Comprehensive resource providing essential tools and information for school operations and student services.")
+    
+    if not resource.get("placeholder_text") or len(resource.get("placeholder_text", "").strip()) < 20:
+        resource["placeholder_text"] = dummy_access_info.get(resource["id"], "Access information and detailed instructions available through the school portal system. Contact administration for assistance.")
+    
+    return resource
 
 def run(
     resources: Optional[List[Dict[str, Optional[str]]]] = None,
@@ -102,13 +118,9 @@ def run(
     show_toc: bool = True,
     show_title: bool = True,
     title_text: str = "Resources Hub",
-    subtitle_text: str = "Click on section titles to view detailed information. Resources will be accessible through the directory system."
+    subtitle_text: str = "Click on any resource title below to view detailed information"
 ):
-    """Render the Resources Hub page.
-
-    If `resources` is None, uses the built-in RESOURCES list in this file.
-    If `app_base_url` is None, uses APP_BASE_URL from secrets (or "").
-    """
+    """Render the Resources Hub page with clean title list and top info card display."""
     data = resources if resources is not None else RESOURCES
     base = APP_BASE_URL if app_base_url is None else app_base_url
 
@@ -132,316 +144,165 @@ def run(
             {f'<p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">{subtitle_text}</p>' if subtitle_text else ''}
         </div>
         """, unsafe_allow_html=True)
-        
-        # Add custom CSS for better button styling
-        st.markdown("""
-        <style>
-        .stButton > button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 12px 20px;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            width: 100%;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-        .stButton > button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-            background: linear-gradient(135deg, #5a6fd8 0%, #6b5b95 100%);
-        }
-        .stButton > button:active {
-            transform: translateY(0);
-        }
-        </style>
-        """, unsafe_allow_html=True)
 
-    # Initialize session state for popup
-    if "show_popup" not in st.session_state:
-        st.session_state.show_popup = False
-    if "popup_resource" not in st.session_state:
-        st.session_state.popup_resource = None
-    if "should_scroll" not in st.session_state:
-        st.session_state.should_scroll = False
+    # Initialize session state
+    if "selected_resource" not in st.session_state:
+        st.session_state.selected_resource = None
 
-    # Prepare anchors
+    # Prepare resources with dummy info
     processed = []
     for item in data:
         if not item or not item.get("title"):
             continue
         i = dict(item)
         i["anchor"] = _slugify(i["title"])
+        i = _add_dummy_info(i)  # Add dummy info where needed
         processed.append(i)
 
-    # Sidebar TOC with popup functionality
+    # Display info card at top if resource is selected
+    if st.session_state.selected_resource:
+        resource = st.session_state.selected_resource
+        
+        # Info card container
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%); 
+                    padding: 25px; border-radius: 20px; margin: 20px 0; 
+                    border: 2px solid #e3f2fd; box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+                    animation: slideDown 0.5s ease-out;">
+        </div>
+        <style>
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Header with close button
+        col1, col2 = st.columns([8, 1])
+        with col1:
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                        padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                <h2 style="color: white; margin: 0; font-weight: 700; font-size: 24px;">
+                    📋 {resource['title']}
+                </h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            if st.button("✖", key="close_info", help="Close info card"):
+                st.session_state.selected_resource = None
+                st.rerun()
+        
+        # Resource details
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            # Group info
+            st.markdown(f"""
+            <div style="background: #e8f4fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <h4 style="color: #1976d2; margin: 0 0 5px 0;">🏢 Department</h4>
+                <p style="margin: 0; color: #424242;">{resource.get('group', 'General Resources')}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Description
+            desc = resource.get("description", "")
+            if desc:
+                st.markdown(f"""
+                <div style="background: #fff8e1; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h4 style="color: #f57c00; margin: 0 0 10px 0;">📝 Description</h4>
+                    <p style="margin: 0; color: #424242; line-height: 1.6;">{desc}</p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        with col2:
+            # Access information
+            access_info = resource.get("placeholder_text", "")
+            if access_info:
+                st.markdown(f"""
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h4 style="color: #388e3c; margin: 0 0 10px 0;">🔑 Access Information</h4>
+                    <p style="margin: 0; color: #424242; line-height: 1.6;">{access_info}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Quick actions
+            st.markdown("""
+            <div style="background: #f3e5f5; padding: 15px; border-radius: 10px;">
+                <h4 style="color: #7b1fa2; margin: 0 0 10px 0;">⚡ Quick Actions</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("📞 Contact Support", key="contact_support", use_container_width=True):
+                st.info("Contact information: admin@cwcc.edu.hk | Tel: +852 1234 5678")
+            
+            if st.button("📚 View Documentation", key="view_docs", use_container_width=True):
+                st.info("Documentation will be available in the school portal system.")
+
+        st.markdown("---")
+
+    # Sidebar with grouped resources
     if show_toc:
-        st.sidebar.header("Resource Sections")
+        st.sidebar.header("📚 Resource Categories")
         by_group = {}
         for r in processed:
             grp = r.get("group", "Ungrouped")
             by_group.setdefault(grp, []).append(r)
+        
         for group, items in by_group.items():
-            with st.sidebar.expander(group, expanded=True):
+            with st.sidebar.expander(f"🏢 {group}", expanded=True):
                 for r in items:
-                    # Create clickable button for each resource in sidebar with enhanced feedback
-                    if st.sidebar.button(f"� {r['titlee']}", key=f"sidebar_{r['anchor']}", help="🚀 Click to view detailed information", use_container_width=True):
-                        st.session_state.show_popup = True
-                        st.session_state.popup_resource = r
-                        st.session_state.should_scroll = True
-                        # Show feedback in sidebar
-                        st.sidebar.success(f"✨ Opening {r['title'][:20]}...")
+                    if st.sidebar.button(r['title'], key=f"sidebar_{r['anchor']}", use_container_width=True):
+                        st.session_state.selected_resource = r
                         st.rerun()
 
-    st.markdown("---")
-
-    # Sections with clickable headers
-    cols = st.columns([1, 1, 1])  # Create a 3-column layout for better organization
-    col_idx = 0
+    # Main content: Clean list of resources
+    st.markdown("### 📋 Available Resources")
+    st.markdown("*Click on any title to view detailed information*")
     
+    # Group resources by category
+    by_group = {}
     for r in processed:
-        anchor = r["anchor"]
-        # Invisible anchor for deep linking
-        st.markdown(f'<div id="{anchor}"></div>', unsafe_allow_html=True)
+        grp = r.get("group", "Ungrouped")
+        by_group.setdefault(grp, []).append(r)
+    
+    # Display resources by group
+    for group, items in by_group.items():
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); 
+                    padding: 20px; border-radius: 15px; margin: 20px 0; 
+                    border-left: 5px solid #667eea;">
+            <h3 style="color: #2c3e50; margin: 0 0 15px 0;">🏢 {group}</h3>
+        </div>
+        """, unsafe_allow_html=True)
         
-        with cols[col_idx % 3]:
-            # Create a card-like container for each resource with enhanced styling
-            with st.container():
-                # Clickable title area that triggers popup with enhanced visual feedback
-                title_clicked = st.button(
-                    f"📋 {r['title']}", 
-                    key=f"title_{anchor}",
-                    help=f"🔍 Click to view detailed information about {r['title']}",
+        # Display items in this group
+        cols = st.columns(2)
+        for idx, resource in enumerate(items):
+            with cols[idx % 2]:
+                # Clean title button
+                if st.button(
+                    f"📄 {resource['title']}", 
+                    key=f"main_{resource['anchor']}",
+                    help=f"Click to view details about {resource['title']}",
                     use_container_width=True
-                )
-                
-                if title_clicked:
-                    st.session_state.show_popup = True
-                    st.session_state.popup_resource = r
-                    st.session_state.should_scroll = True
-                    # Add a brief success message
-                    st.success(f"✨ Loading details for {r['title']}...")
+                ):
+                    st.session_state.selected_resource = resource
                     st.rerun()
                 
-                # Enhanced card design with proper markdown
-                card_html = f"""
-                <div style="border: 2px solid #e3f2fd; border-radius: 15px; padding: 15px; margin: 10px 5px; background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%); box-shadow: 0 6px 20px rgba(0,0,0,0.08); transition: all 0.3s ease; position: relative; overflow: hidden;">
-                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);"></div>
-                    <div style="background: rgba(102, 126, 234, 0.1); padding: 8px 12px; border-radius: 20px; margin-bottom: 12px; display: inline-block; border: 1px solid rgba(102, 126, 234, 0.2);">
-                        <small style="color: #4c6ef5; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">🏢 {r.get('group', 'Ungrouped')}</small>
-                    </div>
-                    <div style="color: #495057; font-size: 13px; line-height: 1.4; margin-top: 8px;">
-                        {(r.get('description', 'Click to view more details') or 'Click to view more details')[:80]}{'...' if len(r.get('description', '')) > 80 else ''}
-                    </div>
-                </div>
-                """
-                st.markdown(card_html, unsafe_allow_html=True)
+                # Brief preview
+                preview_text = resource.get('description', '')[:100]
+                if len(preview_text) > 97:
+                    preview_text = preview_text[:97] + "..."
                 
-                # Enhanced clickable hint with animation
-                hint_html = """
-                <div style="text-align: center; margin-top: 10px; padding: 8px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%); border-radius: 12px; border: 1px dashed rgba(102, 126, 234, 0.4); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)'; this.style.transform='scale(1)'">
-                    <small style="color: #495057; font-weight: 500; font-size: 12px; display: flex; align-items: center; justify-content: center;">
-                        <span style="margin-right: 5px; animation: pulse 2s infinite;">🔍</span>
-                        Click title above for detailed information
-                    </small>
+                st.markdown(f"""
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; 
+                            margin-bottom: 15px; border-left: 3px solid #dee2e6;">
+                    <small style="color: #6c757d; font-style: italic;">{preview_text}</small>
                 </div>
-                <style>
-                @keyframes pulse {
-                    0% { opacity: 1; }
-                    50% { opacity: 0.6; }
-                    100% { opacity: 1; }
-                }
-                </style>
-                """
-                st.markdown(hint_html, unsafe_allow_html=True)
-        
-        col_idx += 1
-
-    # Display popup modal with enhanced overlay effect
-    if st.session_state.show_popup and st.session_state.popup_resource:
-        # Show notification that popup is open
-        st.info("📋 **Resource Details Panel** - Scroll down to view complete information", icon="ℹ️")
-        
-        # Add auto-scroll JavaScript when popup should be shown
-        if st.session_state.should_scroll:
-            st.markdown(_add_scroll_to_popup_js(), unsafe_allow_html=True)
-            st.session_state.should_scroll = False  # Reset scroll flag
-        
-        # Add overlay effect and enhanced popup styling
-        overlay_css = """
-        <style>
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        .popup-container {
-            position: relative;
-            z-index: 1000;
-            animation: slideIn 0.4s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideIn {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
-            50% { box-shadow: 0 20px 50px rgba(102, 126, 234, 0.2); }
-            100% { box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
-        }
-        </style>
-        """
-        st.markdown(overlay_css, unsafe_allow_html=True)
-        
-        with st.container():
-            # Enhanced popup header with animation classes
-            popup_header_html = """
-            <div id="resource-popup-container" class="popup-container pulse-animation" style="background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%); padding: 30px; border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); margin: 30px 0; border: 3px solid #e3f2fd; position: relative; overflow: hidden; backdrop-filter: blur(10px);">
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 8px; background: linear-gradient(90deg, #667eea 0%, #764ba2 30%, #4ecdc4 60%, #ff6b6b 100%); animation: shimmer 3s ease-in-out infinite;"></div>
-                <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 25px;">
-                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 20px; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); animation: bounce 2s infinite;">
-                        <span style="color: white; font-size: 28px;">📋</span>
-                    </div>
-                    <h2 style="color: #2c3e50; margin: 0; font-weight: 700; font-size: 32px; text-shadow: 0 3px 6px rgba(0,0,0,0.1);">Resource Details</h2>
-                </div>
-            </div>
-            <style>
-            @keyframes shimmer {
-                0% { background-position: -200% 0; }
-                100% { background-position: 200% 0; }
-            }
-            @keyframes bounce {
-                0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-                40% { transform: translateY(-10px); }
-                60% { transform: translateY(-5px); }
-            }
-            </style>
-            """
-            st.markdown(popup_header_html, unsafe_allow_html=True)
-            
-            resource = st.session_state.popup_resource
-            
-            # Enhanced layout with better visual hierarchy and improved close button
-            col1, col2, col3 = st.columns([6, 1, 2])
-            with col1:
-                header_html = f"""
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 18px; margin: 15px 0; box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4); position: relative; overflow: hidden;">
-                    <div style="position: absolute; top: 0; right: 0; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); border-radius: 50%; transform: translate(30px, -30px);"></div>
-                    <h2 style="color: white; margin: 0; font-weight: 700; font-size: 26px; text-shadow: 0 3px 6px rgba(0,0,0,0.3); position: relative; z-index: 1;">🏷️ {resource['title']}</h2>
-                </div>
-                """
-                st.markdown(header_html, unsafe_allow_html=True)
-            
-            with col3:
-                # Enhanced close button with better styling
-                close_button_html = """
-                <div style="text-align: right; margin: 15px 0;">
-                """
-                st.markdown(close_button_html, unsafe_allow_html=True)
-                
-                if st.button("✖ Close Details", key="close_popup", help="Close resource details", type="secondary"):
-                    st.session_state.show_popup = False
-                    st.session_state.popup_resource = None
-                    st.session_state.should_scroll = False
-                    st.rerun()
-                
-                st.markdown("</div>", unsafe_allow_html=True)
-            
-            # Enhanced information display with better styling  
-            group_html = f"""
-            <div style="background: linear-gradient(135deg, #e8f4fd 0%, #ffffff 100%); padding: 18px; border-radius: 12px; margin: 15px 0; border-left: 5px solid #667eea; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                    <span style="font-size: 18px; margin-right: 8px;">🏢</span>
-                    <strong style="color: #495057; font-size: 16px;">Group:</strong>
-                </div>
-                <div style="background: rgba(102, 126, 234, 0.1); padding: 8px 15px; border-radius: 20px; display: inline-block; border: 1px solid rgba(102, 126, 234, 0.2);">
-                    <span style="color: #4c6ef5; font-weight: 600; font-size: 14px;">{resource.get('group', 'Ungrouped')}</span>
-                </div>
-            </div>
-            """
-            st.markdown(group_html, unsafe_allow_html=True)
-            
-            desc = (resource.get("description") or "").strip()
-            placeholder = (resource.get("placeholder_text") or "").strip()
-            
-            if desc:
-                desc_html = f"""
-                <div style="background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%); padding: 20px; border-radius: 12px; margin: 15px 0; border-left: 5px solid #ffa726; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                    <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                        <span style="font-size: 20px; margin-right: 10px;">📝</span>
-                        <h3 style="color: #e65100; margin: 0; font-weight: 600; font-size: 18px;">Description</h3>
-                    </div>
-                    <div style="color: #424242; font-size: 15px; line-height: 1.6; background: rgba(255, 255, 255, 0.8); padding: 15px; border-radius: 8px; border: 1px solid rgba(255, 167, 38, 0.2);">
-                        {desc}
-                    </div>
-                </div>
-                """
-                st.markdown(desc_html, unsafe_allow_html=True)
-            
-            if placeholder:
-                placeholder_html = f"""
-                <div style="background: linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%); padding: 20px; border-radius: 12px; margin: 15px 0; border-left: 5px solid #4caf50; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                    <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                        <span style="font-size: 20px; margin-right: 10px;">🔑</span>
-                        <h3 style="color: #2e7d32; margin: 0; font-weight: 600; font-size: 18px;">Access Information</h3>
-                    </div>
-                    <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(76, 175, 80, 0.3); color: #2e7d32; font-size: 15px; line-height: 1.5; display: flex; align-items: center;">
-                        <span style="font-size: 18px; margin-right: 10px;">📍</span>
-                        {placeholder}
-                    </div>
-                </div>
-                """
-                st.markdown(placeholder_html, unsafe_allow_html=True)
-            
-            # Technical information with enhanced styling
-            resource_id = resource.get("id", "")
-            page_function = resource.get("page_function", "")
-            if resource_id or page_function:
-                with st.expander("🔧 Technical Information", expanded=False):
-                    tech_html = """
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                    """
-                    st.markdown(tech_html, unsafe_allow_html=True)
-                    if resource_id:
-                        st.code(f"Resource ID: {resource_id}", language="text")
-                    if page_function:
-                        st.code(f"Page Function: {page_function}", language="text")
-                    st.markdown("</div>", unsafe_allow_html=True)
-            
-            # Enhanced direct link section
-            section_link = f"{base}#{resource['anchor']}" if base else f"#{resource['anchor']}"
-            link_html = f"""
-            <div style="background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%); padding: 20px; border-radius: 12px; margin: 20px 0; border: 2px solid #2196f3; text-align: center; box-shadow: 0 6px 20px rgba(33, 150, 243, 0.2);">
-                <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
-                    <span style="font-size: 20px; margin-right: 10px;">🔗</span>
-                    <h3 style="color: #1976d2; margin: 0; font-weight: 600;">Direct Link</h3>
-                </div>
-                <a href="{section_link}" style="color: white; text-decoration: none; font-weight: bold; background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); padding: 12px 24px; border-radius: 25px; display: inline-block; margin-top: 10px; box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(33, 150, 243, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(33, 150, 243, 0.4)'">
-                    🚀 Go to {resource['title']}
-                </a>
-            </div>
-            """
-            st.markdown(link_html, unsafe_allow_html=True)
-            
-            # Add a prominent separator
-            separator_html = """
-            <div style="height: 4px; background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57); border-radius: 2px; margin: 20px 0;"></div>
-            """
-            st.markdown(separator_html, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
 
 # Standalone execution
 if __name__ == "__main__":
@@ -452,5 +313,5 @@ if __name__ == "__main__":
         show_toc=True,
         show_title=True,
         title_text="CWCC Resources Hub",
-        subtitle_text="Titles deep-link to sections. Resources will be accessible through the directory system."
+        subtitle_text="Click on any resource title to view detailed information"
     )
