@@ -127,6 +127,8 @@ def run(
     # Initialize session state
     if "selected_resource" not in st.session_state:
         st.session_state.selected_resource = None
+    if "scroll_to_top" not in st.session_state:
+        st.session_state.scroll_to_top = False
 
     # Prepare resources with dummy info
     processed = []
@@ -137,6 +139,41 @@ def run(
         i["anchor"] = _slugify(i["title"])
         i = _add_dummy_info(i)  # Add dummy info where needed
         processed.append(i)
+
+    # Auto-scroll to top if requested
+    if st.session_state.scroll_to_top:
+        st.markdown("""
+        <script>
+        // Aggressive scroll to top - multiple methods
+        (function() {
+            // Immediate scroll
+            window.parent.scrollTo(0, 0);
+            
+            // Repeated attempts
+            for (let i = 0; i < 10; i++) {
+                setTimeout(function() {
+                    window.parent.scrollTo(0, 0);
+                    
+                    // Try all possible scroll containers
+                    const containers = [
+                        window.parent.document.documentElement,
+                        window.parent.document.body,
+                        ...window.parent.document.querySelectorAll('[data-testid="stAppViewContainer"]'),
+                        ...window.parent.document.querySelectorAll('.main'),
+                        ...window.parent.document.querySelectorAll('[data-testid="stApp"]')
+                    ];
+                    
+                    containers.forEach(container => {
+                        if (container) {
+                            container.scrollTop = 0;
+                        }
+                    });
+                }, i * 50);
+            }
+        })();
+        </script>
+        """, unsafe_allow_html=True)
+        st.session_state.scroll_to_top = False  # Reset flag
 
     # 1. MAIN TITLE (Always at the top)
     if show_title:
@@ -167,51 +204,51 @@ def run(
         if st.session_state.selected_resource:
             resource = st.session_state.selected_resource
             
-            # Enhanced auto-scroll to placeholder area
+            # Force scroll to top using multiple reliable methods
             st.markdown("""
             <script>
-            function scrollToPlaceholder() {
-                try {
-                    // Multiple methods to ensure scrolling works
-                    const placeholder = window.parent.document.getElementById('info-placeholder');
-                    if (placeholder) {
-                        // Method 1: ScrollIntoView
-                        placeholder.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start',
-                            inline: 'nearest'
-                        });
-                        
-                        // Method 2: Direct scroll (backup)
-                        setTimeout(function() {
-                            const rect = placeholder.getBoundingClientRect();
-                            const scrollTop = window.parent.pageYOffset || window.parent.document.documentElement.scrollTop;
-                            const targetY = rect.top + scrollTop - 20; // 20px offset from top
-                            
-                            window.parent.scrollTo({
-                                top: targetY,
-                                behavior: 'smooth'
-                            });
-                        }, 100);
-                    }
-                    
-                    // Method 3: Streamlit container scroll (alternative)
-                    const stContainer = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
-                    if (stContainer && placeholder) {
-                        const rect = placeholder.getBoundingClientRect();
-                        stContainer.scrollTop = rect.top + stContainer.scrollTop - 50;
-                    }
-                } catch (e) {
-                    console.log('Scroll attempt failed:', e);
-                }
-            }
+            // Immediate scroll to top
+            window.parent.scrollTo(0, 0);
             
-            // Execute scroll with multiple timing attempts
-            setTimeout(scrollToPlaceholder, 100);
-            setTimeout(scrollToPlaceholder, 300);
-            setTimeout(scrollToPlaceholder, 500);
+            // Alternative methods for different browsers/contexts
+            setTimeout(function() {
+                // Method 1: Window scroll
+                if (window.parent) {
+                    window.parent.scrollTo({top: 0, behavior: 'smooth'});
+                }
+                
+                // Method 2: Document scroll
+                if (window.parent.document.documentElement) {
+                    window.parent.document.documentElement.scrollTop = 0;
+                }
+                
+                // Method 3: Body scroll
+                if (window.parent.document.body) {
+                    window.parent.document.body.scrollTop = 0;
+                }
+                
+                // Method 4: Streamlit container
+                const containers = window.parent.document.querySelectorAll('[data-testid="stAppViewContainer"]');
+                containers.forEach(container => {
+                    container.scrollTop = 0;
+                });
+                
+                // Method 5: Main container
+                const mainContainer = window.parent.document.querySelector('.main');
+                if (mainContainer) {
+                    mainContainer.scrollTop = 0;
+                }
+            }, 50);
+            
+            // Final attempt after page settles
+            setTimeout(function() {
+                window.parent.scrollTo(0, 0);
+            }, 200);
             </script>
             """, unsafe_allow_html=True)
+            
+            # Show scroll notification
+            st.info("🔝 **Scrolled to top!** Resource details are displayed below.", icon="✨")
             
             # Info card with unique ID for scrolling and scroll anchor
             st.markdown('<div id="scroll-target"></div>', unsafe_allow_html=True)
@@ -224,10 +261,6 @@ def run(
                 <div style="position: absolute; top: 0; left: 0; width: 100%; height: 6px; 
                             background: linear-gradient(90deg, #4a90e2 0%, #667eea 50%, #764ba2 100%);"></div>
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <div style="background: rgba(74, 144, 226, 0.1); padding: 8px 15px; border-radius: 20px; 
-                                display: inline-block; margin-bottom: 10px;">
-                        <small style="color: #4a90e2; font-weight: 600;">🔝 Auto-scrolled to info area</small>
-                    </div>
                     <h2 style="color: #2c3e50; margin: 0; font-weight: 700; font-size: 28px;">
                         📋 {resource['title']}
                     </h2>
@@ -325,8 +358,9 @@ def run(
         for group, items in by_group.items():
             with st.sidebar.expander(f"🏢 {group}", expanded=True):
                 for r in items:
-                    if st.sidebar.button(r['title'], key=f"sidebar_{r['anchor']}", use_container_width=True, help="🔝 Click to view details - auto-scroll to info area"):
+                    if st.sidebar.button(r['title'], key=f"sidebar_{r['anchor']}", use_container_width=True, help="🔝 Click to view details - auto-scroll to top"):
                         st.session_state.selected_resource = r
+                        st.session_state.scroll_to_top = True
                         st.rerun()
 
     # 4. RESOURCE LIST (Main content area)
@@ -357,12 +391,11 @@ def run(
                 if st.button(
                     f"📄 {resource['title']}", 
                     key=f"main_{resource['anchor']}",
-                    help=f"🔝 Click to view details - will auto-scroll to info area above",
+                    help=f"🔝 Click to view details - will auto-scroll to top",
                     use_container_width=True
                 ):
                     st.session_state.selected_resource = resource
-                    # Add a brief loading message
-                    st.success(f"✨ Loading {resource['title'][:30]}... Scrolling to info area!")
+                    st.session_state.scroll_to_top = True
                     st.rerun()
                 
                 # Brief preview
