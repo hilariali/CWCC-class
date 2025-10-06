@@ -3,6 +3,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from typing import List, Dict, Optional
 import json
+from llm_service import llm_service
 
 # Handle secrets gracefully - only access when in Streamlit context
 try:
@@ -121,83 +122,49 @@ def _extract_safe_keywords(resource):
     
     return list(set(keywords))  # Remove duplicates
 
-def _simple_chatbot_response(user_question, safe_resource_index):
-    """Enhanced chatbot that matches user questions to resource IDs using multiple text sources"""
+def _ai_chatbot_response(user_question, safe_resource_index):
+    """AI-powered chatbot that uses LLM to match user questions to resources"""
+    try:
+        # Use LLM service for intelligent matching
+        resource_id, ai_response = llm_service.match_resource(user_question, safe_resource_index)
+        return resource_id, ai_response
+    except Exception as e:
+        # Fallback to simple keyword matching if LLM fails
+        return _fallback_simple_matching(user_question, safe_resource_index)
+
+def _fallback_simple_matching(user_question, safe_resource_index):
+    """Fallback simple matching when LLM is not available"""
     user_question_lower = user_question.lower()
     
-    # Enhanced keyword matching with multiple sources
+    # Simple keyword matching as fallback
     matches = []
     for resource in safe_resource_index:
         score = 0
         
-        # Check title match (highest weight)
-        title_words = resource["title"].lower().split()
-        title_matches = sum(1 for word in title_words if word in user_question_lower)
-        score += title_matches * 4
+        # Check title match
+        if any(word in user_question_lower for word in resource["title"].lower().split()):
+            score += 3
         
-        # Check exact phrase matches in title
-        if any(phrase in user_question_lower for phrase in [resource["title"].lower()]):
-            score += 5
+        # Check keyword matches
+        for keyword in resource["keywords"]:
+            if keyword in user_question_lower:
+                score += 1
         
-        # Check keyword matches (medium weight)
-        keyword_matches = sum(1 for keyword in resource["keywords"] if keyword in user_question_lower)
-        score += keyword_matches * 1.5
-        
-        # Check group match (medium weight)
-        group_words = resource["group"].lower().split()
-        group_matches = sum(1 for word in group_words if word in user_question_lower)
-        score += group_matches * 2
-        
-        # Check placeholder text match (good for context)
-        placeholder_lower = resource["placeholder_text"].lower()
-        placeholder_words = re.findall(r'\b\w+\b', placeholder_lower)
-        placeholder_matches = sum(1 for word in placeholder_words if word in user_question_lower and len(word) > 3)
-        score += placeholder_matches * 1
-        
-        # Bonus for exact ID-related matches
-        resource_id = resource["id"]
-        if any(key in user_question_lower for key in resource_id.split("-")):
+        # Check group match
+        if any(word in user_question_lower for word in resource["group"].lower().split()):
             score += 2
-        
-        # Special context matching
-        context_matches = {
-            "book": ["venue", "booking", "room"],
-            "report": ["facility", "issue", "problem"],
-            "park": ["parking", "car", "vehicle"],
-            "map": ["floor", "plan", "layout"],
-            "discipline": ["misbehaviour", "behavior", "conduct"],
-            "schedule": ["duty", "teacher", "roster"],
-            "student": ["committee", "attendance", "discipline"],
-            "design": ["canva", "graphics", "creative"],
-            "video": ["filmora", "editing", "multimedia"]
-        }
-        
-        for context_word, related_words in context_matches.items():
-            if context_word in user_question_lower:
-                if any(word in resource["keywords"] for word in related_words):
-                    score += 3
         
         if score > 0:
             matches.append((resource, score))
     
-    # Sort by score and return top matches
+    # Sort by score and return top match
     matches.sort(key=lambda x: x[1], reverse=True)
     
     if not matches:
-        return None, "I couldn't find any resources matching your question. Try asking about venue booking, student discipline, design tools, or browse the resources below."
+        return None, "I couldn't find any resources matching your question. Please try rephrasing or browse the resources below."
     
-    # Return the best match
     best_match = matches[0][0]
-    
-    # More informative responses based on score
-    if matches[0][1] >= 8:
-        response = f"Perfect match! I found **{best_match['title']}** which is exactly what you're looking for. Let me show you the details!"
-    elif matches[0][1] >= 5:
-        response = f"Great match! **{best_match['title']}** should help with your question. Let me show you the details!"
-    elif len(matches) > 1 and matches[1][1] > matches[0][1] * 0.7:
-        response = f"I found a few relevant resources. **{best_match['title']}** seems to be the best match. Let me show you the details!"
-    else:
-        response = f"I found **{best_match['title']}** which might help with your question. Let me show you the details!"
+    response = f"I found **{best_match['title']}** which might help with your question. Let me show you the details!"
     
     return best_match["id"], response
 
@@ -296,10 +263,16 @@ def run(
     st.markdown("### 🤖 AI Resource Assistant")
     
     # Chatbot toggle and interface
-    col1, col2 = st.columns([3, 1])
+    col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
         st.markdown("*Ask me about any resource and I'll help you find it!*")
     with col2:
+        # AI status indicator
+        if llm_service.client:
+            st.success("🧠 AI Powered", help="Using OpenAI GPT for intelligent matching")
+        else:
+            st.warning("⚡ Basic Mode", help="Using keyword matching (AI unavailable)")
+    with col3:
         if st.button("💬 Toggle Chat", key="toggle_chat"):
             st.session_state.show_chatbot = not st.session_state.show_chatbot
             st.rerun()
@@ -347,8 +320,8 @@ def run(
                         "content": user_question
                     })
                     
-                    # Get chatbot response
-                    matched_id, bot_response = _simple_chatbot_response(user_question, safe_index)
+                    # Get AI chatbot response
+                    matched_id, bot_response = _ai_chatbot_response(user_question, safe_index)
                     
                     # Add bot response
                     st.session_state.chat_messages.append({
@@ -377,7 +350,7 @@ def run(
         with col1:
             if st.button("🏢 Venue booking", key="suggest1"):
                 st.session_state.chat_messages.append({"role": "user", "content": "How do I book a venue?"})
-                matched_id, bot_response = _simple_chatbot_response("How do I book a venue?", safe_index)
+                matched_id, bot_response = _ai_chatbot_response("How do I book a venue?", safe_index)
                 st.session_state.chat_messages.append({"role": "assistant", "content": bot_response})
                 if matched_id:
                     for resource in processed:
@@ -389,7 +362,7 @@ def run(
         with col2:
             if st.button("📝 Student discipline", key="suggest2"):
                 st.session_state.chat_messages.append({"role": "user", "content": "Student discipline form"})
-                matched_id, bot_response = _simple_chatbot_response("Student discipline form", safe_index)
+                matched_id, bot_response = _ai_chatbot_response("Student discipline form", safe_index)
                 st.session_state.chat_messages.append({"role": "assistant", "content": bot_response})
                 if matched_id:
                     for resource in processed:
@@ -401,7 +374,7 @@ def run(
         with col3:
             if st.button("🎨 Design tools", key="suggest3"):
                 st.session_state.chat_messages.append({"role": "user", "content": "Design and graphics tools"})
-                matched_id, bot_response = _simple_chatbot_response("Design and graphics tools", safe_index)
+                matched_id, bot_response = _ai_chatbot_response("Design and graphics tools", safe_index)
                 st.session_state.chat_messages.append({"role": "assistant", "content": bot_response})
                 if matched_id:
                     for resource in processed:
