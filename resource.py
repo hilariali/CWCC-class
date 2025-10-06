@@ -2,6 +2,7 @@ import re
 import streamlit as st
 import streamlit.components.v1 as components
 from typing import List, Dict, Optional
+import json
 
 # Handle secrets gracefully - only access when in Streamlit context
 try:
@@ -51,6 +52,105 @@ def _slugify(text: str) -> str:
     s = re.sub(r"[^a-z0-9\- ]", "", s)
     s = re.sub(r"\s+", "-", s).strip("-")
     return s
+
+def _get_resource_index_for_chatbot(resources):
+    """Create a safe index for chatbot - only IDs and titles, no sensitive details"""
+    safe_index = []
+    for resource in resources:
+        safe_resource = {
+            "id": resource.get("id", ""),
+            "title": resource.get("title", ""),
+            "group": resource.get("group", ""),
+            # Only include very basic keywords, no detailed info
+            "keywords": _extract_safe_keywords(resource)
+        }
+        safe_index.append(safe_resource)
+    return safe_index
+
+def _extract_safe_keywords(resource):
+    """Extract safe keywords from resource for matching, avoiding sensitive details"""
+    keywords = []
+    title = resource.get("title", "").lower()
+    group = resource.get("group", "").lower()
+    
+    # Add basic keywords from title
+    title_words = re.findall(r'\b\w+\b', title)
+    keywords.extend([word for word in title_words if len(word) > 2])
+    
+    # Add group keywords
+    group_words = re.findall(r'\b\w+\b', group)
+    keywords.extend([word for word in group_words if len(word) > 2])
+    
+    # Add some safe category keywords based on ID
+    id_keywords = {
+        "venue-booking": ["venue", "booking", "room", "facility"],
+        "facility-report": ["facility", "maintenance", "report", "issue"],
+        "parking": ["parking", "car", "vehicle", "guest"],
+        "floor-plan": ["floor", "plan", "map", "layout"],
+        "seating": ["seating", "seat", "arrangement"],
+        "misbehaviour": ["discipline", "behavior", "conduct"],
+        "teacher-duty": ["teacher", "duty", "schedule"],
+        "assembly": ["assembly", "announcement", "morning"],
+        "attendance": ["attendance", "record", "tracking"],
+        "committee": ["committee", "student", "leadership"],
+        "credit-warning": ["credit", "warning", "academic"],
+        "referral": ["referral", "counseling", "support"],
+        "materials": ["materials", "supplies", "resources"],
+        "handbook": ["handbook", "guide", "policy"],
+        "evaluation": ["evaluation", "assessment"],
+        "exam": ["exam", "activities", "post"],
+        "ramadan": ["ramadan", "religious", "accommodation"],
+        "canva": ["canva", "design", "graphics"],
+        "filmora": ["filmora", "video", "editing"]
+    }
+    
+    resource_id = resource.get("id", "")
+    for key, words in id_keywords.items():
+        if key in resource_id:
+            keywords.extend(words)
+    
+    return list(set(keywords))  # Remove duplicates
+
+def _simple_chatbot_response(user_question, safe_resource_index):
+    """Simple chatbot that matches user questions to resource IDs"""
+    user_question_lower = user_question.lower()
+    
+    # Simple keyword matching
+    matches = []
+    for resource in safe_resource_index:
+        score = 0
+        
+        # Check title match
+        if any(word in user_question_lower for word in resource["title"].lower().split()):
+            score += 3
+        
+        # Check keyword matches
+        for keyword in resource["keywords"]:
+            if keyword in user_question_lower:
+                score += 1
+        
+        # Check group match
+        if any(word in user_question_lower for word in resource["group"].lower().split()):
+            score += 2
+        
+        if score > 0:
+            matches.append((resource, score))
+    
+    # Sort by score and return top matches
+    matches.sort(key=lambda x: x[1], reverse=True)
+    
+    if not matches:
+        return None, "I couldn't find any resources matching your question. Please try rephrasing or browse the resources below."
+    
+    # Return the best match
+    best_match = matches[0][0]
+    
+    if len(matches) == 1:
+        response = f"I found a resource that matches your question: **{best_match['title']}**. Let me show you the details!"
+    else:
+        response = f"I found several resources, but **{best_match['title']}** seems to be the best match. Let me show you the details!"
+    
+    return best_match["id"], response
 
 def _add_dummy_info(resource):
     """Add dummy information to resources that lack detailed info"""
@@ -128,6 +228,10 @@ def run(
     # Initialize session state
     if "selected_resource" not in st.session_state:
         st.session_state.selected_resource = None
+    if "chat_messages" not in st.session_state:
+        st.session_state.chat_messages = []
+    if "show_chatbot" not in st.session_state:
+        st.session_state.show_chatbot = False
 
     # Prepare resources with dummy info
     processed = []
@@ -242,6 +346,126 @@ def run(
             {f'<p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">{subtitle_text}</p>' if subtitle_text else ''}
         </div>
         """, unsafe_allow_html=True)
+
+    # *** 2.5. CHATBOT INTERFACE ***
+    st.markdown("### 🤖 AI Resource Assistant")
+    
+    # Chatbot toggle and interface
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.markdown("*Ask me about any resource and I'll help you find it!*")
+    with col2:
+        if st.button("💬 Toggle Chat", key="toggle_chat"):
+            st.session_state.show_chatbot = not st.session_state.show_chatbot
+            st.rerun()
+    
+    if st.session_state.show_chatbot:
+        # Create safe resource index for chatbot (no sensitive details)
+        safe_index = _get_resource_index_for_chatbot(processed)
+        
+        # Chat interface
+        st.markdown("""
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin: 15px 0; border: 1px solid #dee2e6;">
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Display chat messages
+        if st.session_state.chat_messages:
+            for message in st.session_state.chat_messages[-5:]:  # Show last 5 messages
+                if message["role"] == "user":
+                    st.markdown(f"""
+                    <div style="background: #e3f2fd; padding: 10px; border-radius: 10px; margin: 5px 0; text-align: right;">
+                        <strong>You:</strong> {message["content"]}
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                    <div style="background: #f3e5f5; padding: 10px; border-radius: 10px; margin: 5px 0;">
+                        <strong>🤖 Assistant:</strong> {message["content"]}
+                    </div>
+                    """, unsafe_allow_html=True)
+        
+        # Chat input
+        user_question = st.text_input(
+            "Ask about resources:",
+            placeholder="e.g., 'How do I book a venue?' or 'I need help with student discipline'",
+            key="chat_input"
+        )
+        
+        col1, col2, col3 = st.columns([1, 1, 2])
+        with col1:
+            if st.button("Send", key="send_chat", disabled=not user_question.strip()):
+                if user_question.strip():
+                    # Add user message
+                    st.session_state.chat_messages.append({
+                        "role": "user",
+                        "content": user_question
+                    })
+                    
+                    # Get chatbot response
+                    matched_id, bot_response = _simple_chatbot_response(user_question, safe_index)
+                    
+                    # Add bot response
+                    st.session_state.chat_messages.append({
+                        "role": "assistant",
+                        "content": bot_response
+                    })
+                    
+                    # If we found a match, show the resource
+                    if matched_id:
+                        # Find the full resource by ID
+                        for resource in processed:
+                            if resource.get("id") == matched_id:
+                                st.session_state.selected_resource = resource
+                                break
+                    
+                    st.rerun()
+        
+        with col2:
+            if st.button("Clear Chat", key="clear_chat"):
+                st.session_state.chat_messages = []
+                st.rerun()
+        
+        # Quick suggestion buttons
+        st.markdown("**Quick suggestions:**")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("🏢 Venue booking", key="suggest1"):
+                st.session_state.chat_messages.append({"role": "user", "content": "How do I book a venue?"})
+                matched_id, bot_response = _simple_chatbot_response("How do I book a venue?", safe_index)
+                st.session_state.chat_messages.append({"role": "assistant", "content": bot_response})
+                if matched_id:
+                    for resource in processed:
+                        if resource.get("id") == matched_id:
+                            st.session_state.selected_resource = resource
+                            break
+                st.rerun()
+        
+        with col2:
+            if st.button("📝 Student discipline", key="suggest2"):
+                st.session_state.chat_messages.append({"role": "user", "content": "Student discipline form"})
+                matched_id, bot_response = _simple_chatbot_response("Student discipline form", safe_index)
+                st.session_state.chat_messages.append({"role": "assistant", "content": bot_response})
+                if matched_id:
+                    for resource in processed:
+                        if resource.get("id") == matched_id:
+                            st.session_state.selected_resource = resource
+                            break
+                st.rerun()
+        
+        with col3:
+            if st.button("🎨 Design tools", key="suggest3"):
+                st.session_state.chat_messages.append({"role": "user", "content": "Design and graphics tools"})
+                matched_id, bot_response = _simple_chatbot_response("Design and graphics tools", safe_index)
+                st.session_state.chat_messages.append({"role": "assistant", "content": bot_response})
+                if matched_id:
+                    for resource in processed:
+                        if resource.get("id") == matched_id:
+                            st.session_state.selected_resource = resource
+                            break
+                st.rerun()
+        
+        st.markdown("---")
 
     # *** 3. PLACEHOLDER MESSAGE (Only when no resource selected) ***
     if not st.session_state.selected_resource:
