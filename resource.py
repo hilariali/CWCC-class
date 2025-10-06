@@ -167,19 +167,55 @@ def run(
         if st.session_state.selected_resource:
             resource = st.session_state.selected_resource
             
-            # Auto-scroll to placeholder area
+            # Enhanced auto-scroll to placeholder area
             st.markdown("""
             <script>
-            setTimeout(function() {
-                const placeholder = window.parent.document.getElementById('info-placeholder');
-                if (placeholder) {
-                    placeholder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            function scrollToPlaceholder() {
+                try {
+                    // Multiple methods to ensure scrolling works
+                    const placeholder = window.parent.document.getElementById('info-placeholder');
+                    if (placeholder) {
+                        // Method 1: ScrollIntoView
+                        placeholder.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start',
+                            inline: 'nearest'
+                        });
+                        
+                        // Method 2: Direct scroll (backup)
+                        setTimeout(function() {
+                            const rect = placeholder.getBoundingClientRect();
+                            const scrollTop = window.parent.pageYOffset || window.parent.document.documentElement.scrollTop;
+                            const targetY = rect.top + scrollTop - 20; // 20px offset from top
+                            
+                            window.parent.scrollTo({
+                                top: targetY,
+                                behavior: 'smooth'
+                            });
+                        }, 100);
+                    }
+                    
+                    // Method 3: Streamlit container scroll (alternative)
+                    const stContainer = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
+                    if (stContainer && placeholder) {
+                        const rect = placeholder.getBoundingClientRect();
+                        stContainer.scrollTop = rect.top + stContainer.scrollTop - 50;
+                    }
+                } catch (e) {
+                    console.log('Scroll attempt failed:', e);
                 }
-            }, 200);
+            }
+            
+            // Execute scroll with multiple timing attempts
+            setTimeout(scrollToPlaceholder, 100);
+            setTimeout(scrollToPlaceholder, 300);
+            setTimeout(scrollToPlaceholder, 500);
             </script>
             """, unsafe_allow_html=True)
             
-            # Info card with unique ID for scrolling
+            # Info card with unique ID for scrolling and scroll anchor
+            st.markdown('<div id="scroll-target"></div>', unsafe_allow_html=True)
+            
             st.markdown(f"""
             <div id="info-placeholder" style="background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%); 
                         padding: 30px; border-radius: 25px; margin: 25px 0; 
@@ -188,6 +224,10 @@ def run(
                 <div style="position: absolute; top: 0; left: 0; width: 100%; height: 6px; 
                             background: linear-gradient(90deg, #4a90e2 0%, #667eea 50%, #764ba2 100%);"></div>
                 <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="background: rgba(74, 144, 226, 0.1); padding: 8px 15px; border-radius: 20px; 
+                                display: inline-block; margin-bottom: 10px;">
+                        <small style="color: #4a90e2; font-weight: 600;">🔝 Auto-scrolled to info area</small>
+                    </div>
                     <h2 style="color: #2c3e50; margin: 0; font-weight: 700; font-size: 28px;">
                         📋 {resource['title']}
                     </h2>
@@ -285,7 +325,7 @@ def run(
         for group, items in by_group.items():
             with st.sidebar.expander(f"🏢 {group}", expanded=True):
                 for r in items:
-                    if st.sidebar.button(r['title'], key=f"sidebar_{r['anchor']}", use_container_width=True):
+                    if st.sidebar.button(r['title'], key=f"sidebar_{r['anchor']}", use_container_width=True, help="🔝 Click to view details - auto-scroll to info area"):
                         st.session_state.selected_resource = r
                         st.rerun()
 
@@ -313,14 +353,16 @@ def run(
         cols = st.columns(2)
         for idx, resource in enumerate(items):
             with cols[idx % 2]:
-                # Resource title button
+                # Resource title button with scroll indicator
                 if st.button(
                     f"📄 {resource['title']}", 
                     key=f"main_{resource['anchor']}",
-                    help=f"Click to view details - will scroll to info area above",
+                    help=f"🔝 Click to view details - will auto-scroll to info area above",
                     use_container_width=True
                 ):
                     st.session_state.selected_resource = resource
+                    # Add a brief loading message
+                    st.success(f"✨ Loading {resource['title'][:30]}... Scrolling to info area!")
                     st.rerun()
                 
                 # Brief preview
