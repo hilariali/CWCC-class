@@ -269,9 +269,11 @@ def run(
     with col2:
         # AI status indicator
         if llm_service.client:
-            st.success("🧠 AI Powered", help="Using OpenAI GPT for intelligent matching")
+            st.success("🧠 AI Powered")
+            st.caption("Using OpenAI GPT")
         else:
-            st.warning("⚡ Basic Mode", help="Using keyword matching (AI unavailable)")
+            st.warning("⚡ Basic Mode")
+            st.caption("Keyword matching")
     with col3:
         if st.button("💬 Toggle Chat", key="toggle_chat"):
             st.session_state.show_chatbot = not st.session_state.show_chatbot
