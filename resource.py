@@ -243,111 +243,7 @@ def run(
         i = _add_dummy_info(i)  # Add dummy info where needed
         processed.append(i)
 
-    # *** 1. INFO CARD AT THE VERY TOP (Most prominent position) ***
-    if st.session_state.selected_resource:
-        resource = st.session_state.selected_resource
-        
-        # Prominent info card at the absolute top
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%); 
-                    padding: 25px; border-radius: 20px; margin: 10px 0 20px 0; 
-                    border: 3px solid #4a90e2; box-shadow: 0 15px 40px rgba(74, 144, 226, 0.3);
-                    animation: slideIn 0.5s ease-out;">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="background: #4a90e2; color: white; padding: 10px 25px; border-radius: 25px; display: inline-block; margin-bottom: 15px; font-weight: 600;">
-                    📋 RESOURCE DETAILS
-                </div>
-                <h2 style="color: #2c3e50; margin: 0; font-weight: 700; font-size: 26px;">
-                    {resource['title']}
-                </h2>
-            </div>
-        </div>
-        <style>
-        @keyframes slideIn {{
-            from {{ transform: translateY(-10px); opacity: 0; }}
-            to {{ transform: translateY(0); opacity: 1; }}
-        }}
-        </style>
-        """, unsafe_allow_html=True)
-        
-        # Close button prominently placed
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("✖ Close Resource Details", key="close_info", help="Close and return to resource list", use_container_width=True, type="primary"):
-                st.session_state.selected_resource = None
-                st.rerun()
-        
-        # Resource details in columns
-        col1, col2 = st.columns([1, 1])
-        
-        with col1:
-            # Department
-            st.markdown(f"""
-            <div style="background: #e8f4fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                <h4 style="color: #1976d2; margin: 0 0 5px 0;">🏢 Department</h4>
-                <p style="margin: 0; color: #424242;">{resource.get('group', 'General Resources')}</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Description
-            desc = resource.get("description", "")
-            if desc:
-                st.markdown(f"""
-                <div style="background: #fff8e1; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                    <h4 style="color: #f57c00; margin: 0 0 10px 0;">📝 Description</h4>
-                    <p style="margin: 0; color: #424242; line-height: 1.6;">{desc}</p>
-                </div>
-                """, unsafe_allow_html=True)
-        
-        with col2:
-            # Access Information
-            access_info = resource.get("placeholder_text", "")
-            if access_info:
-                st.markdown(f"""
-                <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                    <h4 style="color: #388e3c; margin: 0 0 10px 0;">🔑 Access Information</h4>
-                    <p style="margin: 0; color: #424242; line-height: 1.6;">{access_info}</p>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            # Quick Actions
-            st.markdown("""
-            <div style="background: #f3e5f5; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                <h4 style="color: #7b1fa2; margin: 0 0 10px 0;">⚡ Quick Actions</h4>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("📞 Contact Support", key="contact_support", use_container_width=True):
-                st.info("📧 admin@cwcc.edu.hk | ☎️ +852 1234 5678")
-            
-            if st.button("📚 View Documentation", key="view_docs", use_container_width=True):
-                st.info("📖 Documentation available in school portal system")
-        
-        st.markdown("---")
-
-    # *** 2. MAIN TITLE ***
-    if show_title:
-        st.markdown(f"""
-        <div style="
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 30px;
-            border-radius: 20px;
-            margin: 20px 0;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        ">
-            <h1 style="
-                color: white;
-                margin: 0;
-                font-weight: 700;
-                font-size: 36px;
-                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            ">{title_text}</h1>
-            {f'<p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">{subtitle_text}</p>' if subtitle_text else ''}
-        </div>
-        """, unsafe_allow_html=True)
-
-    # *** 2.5. CHATBOT INTERFACE ***
+    # *** 1. CHATBOT INTERFACE (At the very top) ***
     st.markdown("### 🤖 AI Resource Assistant")
     
     # Chatbot toggle and interface
@@ -467,7 +363,111 @@ def run(
         
         st.markdown("---")
 
-    # *** 3. PLACEHOLDER MESSAGE (Only when no resource selected) ***
+    # *** 2. MAIN TITLE ***
+    if show_title:
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        ">
+            <h1 style="
+                color: white;
+                margin: 0;
+                font-weight: 700;
+                font-size: 36px;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            ">{title_text}</h1>
+            {f'<p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">{subtitle_text}</p>' if subtitle_text else ''}
+        </div>
+        """, unsafe_allow_html=True)
+
+    # *** 3. INFO CARD PLACEHOLDER AREA ***
+    if st.session_state.selected_resource:
+        resource = st.session_state.selected_resource
+        
+        # Prominent info card
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%); 
+                    padding: 25px; border-radius: 20px; margin: 10px 0 20px 0; 
+                    border: 3px solid #4a90e2; box-shadow: 0 15px 40px rgba(74, 144, 226, 0.3);
+                    animation: slideIn 0.5s ease-out;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="background: #4a90e2; color: white; padding: 10px 25px; border-radius: 25px; display: inline-block; margin-bottom: 15px; font-weight: 600;">
+                    📋 RESOURCE DETAILS
+                </div>
+                <h2 style="color: #2c3e50; margin: 0; font-weight: 700; font-size: 26px;">
+                    {resource['title']}
+                </h2>
+            </div>
+        </div>
+        <style>
+        @keyframes slideIn {{
+            from {{ transform: translateY(-10px); opacity: 0; }}
+            to {{ transform: translateY(0); opacity: 1; }}
+        }}
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Close button prominently placed
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("✖ Close Resource Details", key="close_info", help="Close and return to resource list", use_container_width=True, type="primary"):
+                st.session_state.selected_resource = None
+                st.rerun()
+        
+        # Resource details in columns
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            # Department
+            st.markdown(f"""
+            <div style="background: #e8f4fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <h4 style="color: #1976d2; margin: 0 0 5px 0;">🏢 Department</h4>
+                <p style="margin: 0; color: #424242;">{resource.get('group', 'General Resources')}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Description
+            desc = resource.get("description", "")
+            if desc:
+                st.markdown(f"""
+                <div style="background: #fff8e1; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h4 style="color: #f57c00; margin: 0 0 10px 0;">📝 Description</h4>
+                    <p style="margin: 0; color: #424242; line-height: 1.6;">{desc}</p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        with col2:
+            # Access Information
+            access_info = resource.get("placeholder_text", "")
+            if access_info:
+                st.markdown(f"""
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h4 style="color: #388e3c; margin: 0 0 10px 0;">🔑 Access Information</h4>
+                    <p style="margin: 0; color: #424242; line-height: 1.6;">{access_info}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Quick Actions
+            st.markdown("""
+            <div style="background: #f3e5f5; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <h4 style="color: #7b1fa2; margin: 0 0 10px 0;">⚡ Quick Actions</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("📞 Contact Support", key="contact_support", use_container_width=True):
+                st.info("📧 admin@cwcc.edu.hk | ☎️ +852 1234 5678")
+            
+            if st.button("📚 View Documentation", key="view_docs", use_container_width=True):
+                st.info("📖 Documentation available in school portal system")
+        
+        st.markdown("---")
+
+    # *** 4. PLACEHOLDER MESSAGE (Only when no resource selected) ***
     if not st.session_state.selected_resource:
         st.markdown("""
         <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
@@ -482,7 +482,7 @@ def run(
         </div>
         """, unsafe_allow_html=True)
 
-    # *** 4. SIDEBAR ***
+    # *** 5. SIDEBAR ***
     if show_toc:
         st.sidebar.header("📚 Resource Categories")
         by_group = {}
@@ -497,7 +497,7 @@ def run(
                         st.session_state.selected_resource = r
                         st.rerun()
 
-    # *** 5. RESOURCE LIST ***
+    # *** 6. RESOURCE LIST ***
     st.markdown("### 📋 Available Resources")
     st.markdown("*Click on any title to view detailed information at the top of this page*")
     
