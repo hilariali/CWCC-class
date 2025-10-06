@@ -54,24 +54,26 @@ def _slugify(text: str) -> str:
     return s
 
 def _get_resource_index_for_chatbot(resources):
-    """Create a safe index for chatbot - only IDs and titles, no sensitive details"""
+    """Create a safe index for chatbot - includes placeholder text for better matching"""
     safe_index = []
     for resource in resources:
         safe_resource = {
             "id": resource.get("id", ""),
             "title": resource.get("title", ""),
             "group": resource.get("group", ""),
-            # Only include very basic keywords, no detailed info
+            "placeholder_text": resource.get("placeholder_text", ""),  # Include for better matching
+            # Extract keywords from all available safe text
             "keywords": _extract_safe_keywords(resource)
         }
         safe_index.append(safe_resource)
     return safe_index
 
 def _extract_safe_keywords(resource):
-    """Extract safe keywords from resource for matching, avoiding sensitive details"""
+    """Extract keywords from resource for matching, including placeholder text"""
     keywords = []
     title = resource.get("title", "").lower()
     group = resource.get("group", "").lower()
+    placeholder = resource.get("placeholder_text", "").lower()
     
     # Add basic keywords from title
     title_words = re.findall(r'\b\w+\b', title)
@@ -81,27 +83,35 @@ def _extract_safe_keywords(resource):
     group_words = re.findall(r'\b\w+\b', group)
     keywords.extend([word for word in group_words if len(word) > 2])
     
+    # Add keywords from placeholder text (access information)
+    placeholder_words = re.findall(r'\b\w+\b', placeholder)
+    # Filter out very common words and keep meaningful ones
+    meaningful_words = [word for word in placeholder_words if len(word) > 3 and word not in [
+        'please', 'contact', 'available', 'through', 'system', 'information', 'will', 'with'
+    ]]
+    keywords.extend(meaningful_words)
+    
     # Add some safe category keywords based on ID
     id_keywords = {
-        "venue-booking": ["venue", "booking", "room", "facility"],
-        "facility-report": ["facility", "maintenance", "report", "issue"],
-        "parking": ["parking", "car", "vehicle", "guest"],
-        "floor-plan": ["floor", "plan", "map", "layout"],
-        "seating": ["seating", "seat", "arrangement"],
-        "misbehaviour": ["discipline", "behavior", "conduct"],
-        "teacher-duty": ["teacher", "duty", "schedule"],
-        "assembly": ["assembly", "announcement", "morning"],
-        "attendance": ["attendance", "record", "tracking"],
-        "committee": ["committee", "student", "leadership"],
-        "credit-warning": ["credit", "warning", "academic"],
-        "referral": ["referral", "counseling", "support"],
-        "materials": ["materials", "supplies", "resources"],
-        "handbook": ["handbook", "guide", "policy"],
-        "evaluation": ["evaluation", "assessment"],
-        "exam": ["exam", "activities", "post"],
-        "ramadan": ["ramadan", "religious", "accommodation"],
-        "canva": ["canva", "design", "graphics"],
-        "filmora": ["filmora", "video", "editing"]
+        "venue-booking": ["venue", "booking", "room", "facility", "reserve", "auditorium", "gymnasium"],
+        "facility-report": ["facility", "maintenance", "report", "issue", "problem", "repair", "emergency"],
+        "parking": ["parking", "car", "vehicle", "guest", "visitor", "security"],
+        "floor-plan": ["floor", "plan", "map", "layout", "building", "campus"],
+        "seating": ["seating", "seat", "arrangement", "office", "classroom"],
+        "misbehaviour": ["discipline", "behavior", "conduct", "uniform", "student", "affairs"],
+        "teacher-duty": ["teacher", "duty", "schedule", "supervision", "roster"],
+        "assembly": ["assembly", "announcement", "morning", "daily"],
+        "attendance": ["attendance", "record", "tracking", "behavioral"],
+        "committee": ["committee", "student", "leadership", "class"],
+        "credit-warning": ["credit", "warning", "academic", "performance", "intervention"],
+        "referral": ["referral", "counseling", "support", "social", "worker"],
+        "materials": ["materials", "supplies", "resources", "educational"],
+        "handbook": ["handbook", "guide", "policy", "discipline"],
+        "evaluation": ["evaluation", "assessment", "conduct", "character"],
+        "exam": ["exam", "activities", "post", "enrichment"],
+        "ramadan": ["ramadan", "religious", "accommodation", "muslim"],
+        "canva": ["canva", "design", "graphics", "visual", "creative"],
+        "filmora": ["filmora", "video", "editing", "multimedia"]
     }
     
     resource_id = resource.get("id", "")
@@ -112,26 +122,60 @@ def _extract_safe_keywords(resource):
     return list(set(keywords))  # Remove duplicates
 
 def _simple_chatbot_response(user_question, safe_resource_index):
-    """Simple chatbot that matches user questions to resource IDs"""
+    """Enhanced chatbot that matches user questions to resource IDs using multiple text sources"""
     user_question_lower = user_question.lower()
     
-    # Simple keyword matching
+    # Enhanced keyword matching with multiple sources
     matches = []
     for resource in safe_resource_index:
         score = 0
         
-        # Check title match
-        if any(word in user_question_lower for word in resource["title"].lower().split()):
-            score += 3
+        # Check title match (highest weight)
+        title_words = resource["title"].lower().split()
+        title_matches = sum(1 for word in title_words if word in user_question_lower)
+        score += title_matches * 4
         
-        # Check keyword matches
-        for keyword in resource["keywords"]:
-            if keyword in user_question_lower:
-                score += 1
+        # Check exact phrase matches in title
+        if any(phrase in user_question_lower for phrase in [resource["title"].lower()]):
+            score += 5
         
-        # Check group match
-        if any(word in user_question_lower for word in resource["group"].lower().split()):
+        # Check keyword matches (medium weight)
+        keyword_matches = sum(1 for keyword in resource["keywords"] if keyword in user_question_lower)
+        score += keyword_matches * 1.5
+        
+        # Check group match (medium weight)
+        group_words = resource["group"].lower().split()
+        group_matches = sum(1 for word in group_words if word in user_question_lower)
+        score += group_matches * 2
+        
+        # Check placeholder text match (good for context)
+        placeholder_lower = resource["placeholder_text"].lower()
+        placeholder_words = re.findall(r'\b\w+\b', placeholder_lower)
+        placeholder_matches = sum(1 for word in placeholder_words if word in user_question_lower and len(word) > 3)
+        score += placeholder_matches * 1
+        
+        # Bonus for exact ID-related matches
+        resource_id = resource["id"]
+        if any(key in user_question_lower for key in resource_id.split("-")):
             score += 2
+        
+        # Special context matching
+        context_matches = {
+            "book": ["venue", "booking", "room"],
+            "report": ["facility", "issue", "problem"],
+            "park": ["parking", "car", "vehicle"],
+            "map": ["floor", "plan", "layout"],
+            "discipline": ["misbehaviour", "behavior", "conduct"],
+            "schedule": ["duty", "teacher", "roster"],
+            "student": ["committee", "attendance", "discipline"],
+            "design": ["canva", "graphics", "creative"],
+            "video": ["filmora", "editing", "multimedia"]
+        }
+        
+        for context_word, related_words in context_matches.items():
+            if context_word in user_question_lower:
+                if any(word in resource["keywords"] for word in related_words):
+                    score += 3
         
         if score > 0:
             matches.append((resource, score))
@@ -140,15 +184,20 @@ def _simple_chatbot_response(user_question, safe_resource_index):
     matches.sort(key=lambda x: x[1], reverse=True)
     
     if not matches:
-        return None, "I couldn't find any resources matching your question. Please try rephrasing or browse the resources below."
+        return None, "I couldn't find any resources matching your question. Try asking about venue booking, student discipline, design tools, or browse the resources below."
     
     # Return the best match
     best_match = matches[0][0]
     
-    if len(matches) == 1:
-        response = f"I found a resource that matches your question: **{best_match['title']}**. Let me show you the details!"
+    # More informative responses based on score
+    if matches[0][1] >= 8:
+        response = f"Perfect match! I found **{best_match['title']}** which is exactly what you're looking for. Let me show you the details!"
+    elif matches[0][1] >= 5:
+        response = f"Great match! **{best_match['title']}** should help with your question. Let me show you the details!"
+    elif len(matches) > 1 and matches[1][1] > matches[0][1] * 0.7:
+        response = f"I found a few relevant resources. **{best_match['title']}** seems to be the best match. Let me show you the details!"
     else:
-        response = f"I found several resources, but **{best_match['title']}** seems to be the best match. Let me show you the details!"
+        response = f"I found **{best_match['title']}** which might help with your question. Let me show you the details!"
     
     return best_match["id"], response
 
