@@ -1,5 +1,6 @@
 import re
 import streamlit as st
+import streamlit.components.v1 as components
 from typing import List, Dict, Optional
 
 # Handle secrets gracefully - only access when in Streamlit context
@@ -140,37 +141,46 @@ def run(
         i = _add_dummy_info(i)  # Add dummy info where needed
         processed.append(i)
 
-    # Auto-scroll to top if requested
+    # Auto-scroll using Streamlit components method
     if st.session_state.scroll_to_top:
+        # Use HTML anchor and meta refresh approach
         st.markdown("""
+        <div id="top-anchor"></div>
         <script>
-        // Aggressive scroll to top - multiple methods
-        (function() {
-            // Immediate scroll
+        // Force immediate scroll to top using multiple aggressive methods
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        
+        // Try parent window methods
+        if (window.parent) {
             window.parent.scrollTo(0, 0);
-            
-            // Repeated attempts
-            for (let i = 0; i < 10; i++) {
-                setTimeout(function() {
-                    window.parent.scrollTo(0, 0);
-                    
-                    // Try all possible scroll containers
-                    const containers = [
-                        window.parent.document.documentElement,
-                        window.parent.document.body,
-                        ...window.parent.document.querySelectorAll('[data-testid="stAppViewContainer"]'),
-                        ...window.parent.document.querySelectorAll('.main'),
-                        ...window.parent.document.querySelectorAll('[data-testid="stApp"]')
-                    ];
-                    
-                    containers.forEach(container => {
-                        if (container) {
-                            container.scrollTop = 0;
-                        }
-                    });
-                }, i * 50);
+            if (window.parent.document) {
+                window.parent.document.documentElement.scrollTop = 0;
+                window.parent.document.body.scrollTop = 0;
             }
-        })();
+        }
+        
+        // Streamlit specific containers
+        setTimeout(() => {
+            const elements = [
+                '[data-testid="stAppViewContainer"]',
+                '.main .block-container',
+                '[data-testid="stApp"]',
+                '.stApp',
+                'section.main'
+            ];
+            
+            elements.forEach(selector => {
+                const els = document.querySelectorAll(selector);
+                els.forEach(el => el.scrollTop = 0);
+                
+                if (window.parent) {
+                    const parentEls = window.parent.document.querySelectorAll(selector);
+                    parentEls.forEach(el => el.scrollTop = 0);
+                }
+            });
+        }, 10);
         </script>
         """, unsafe_allow_html=True)
         st.session_state.scroll_to_top = False  # Reset flag
@@ -204,48 +214,58 @@ def run(
         if st.session_state.selected_resource:
             resource = st.session_state.selected_resource
             
-            # Force scroll to top using multiple reliable methods
-            st.markdown("""
+            # Use Streamlit components for more reliable JavaScript execution
+            components.html("""
             <script>
-            // Immediate scroll to top
-            window.parent.scrollTo(0, 0);
-            
-            // Alternative methods for different browsers/contexts
-            setTimeout(function() {
-                // Method 1: Window scroll
-                if (window.parent) {
-                    window.parent.scrollTo({top: 0, behavior: 'smooth'});
+            // Comprehensive scroll to top function
+            function forceScrollToTop() {
+                // Method 1: Direct window scroll
+                window.scrollTo(0, 0);
+                
+                // Method 2: Parent window scroll
+                if (window.parent && window.parent !== window) {
+                    window.parent.scrollTo(0, 0);
+                    
+                    // Method 3: Parent document elements
+                    if (window.parent.document) {
+                        window.parent.document.documentElement.scrollTop = 0;
+                        window.parent.document.body.scrollTop = 0;
+                    }
                 }
                 
-                // Method 2: Document scroll
-                if (window.parent.document.documentElement) {
-                    window.parent.document.documentElement.scrollTop = 0;
-                }
+                // Method 4: All possible containers
+                const selectors = [
+                    '[data-testid="stAppViewContainer"]',
+                    '.main',
+                    '[data-testid="stApp"]',
+                    '.stApp',
+                    'section.main',
+                    '.block-container'
+                ];
                 
-                // Method 3: Body scroll
-                if (window.parent.document.body) {
-                    window.parent.document.body.scrollTop = 0;
-                }
-                
-                // Method 4: Streamlit container
-                const containers = window.parent.document.querySelectorAll('[data-testid="stAppViewContainer"]');
-                containers.forEach(container => {
-                    container.scrollTop = 0;
+                selectors.forEach(selector => {
+                    // Current window
+                    document.querySelectorAll(selector).forEach(el => {
+                        el.scrollTop = 0;
+                    });
+                    
+                    // Parent window
+                    if (window.parent && window.parent.document) {
+                        window.parent.document.querySelectorAll(selector).forEach(el => {
+                            el.scrollTop = 0;
+                        });
+                    }
                 });
-                
-                // Method 5: Main container
-                const mainContainer = window.parent.document.querySelector('.main');
-                if (mainContainer) {
-                    mainContainer.scrollTop = 0;
-                }
-            }, 50);
+            }
             
-            // Final attempt after page settles
-            setTimeout(function() {
-                window.parent.scrollTo(0, 0);
-            }, 200);
+            // Execute immediately and repeatedly
+            forceScrollToTop();
+            setTimeout(forceScrollToTop, 50);
+            setTimeout(forceScrollToTop, 100);
+            setTimeout(forceScrollToTop, 200);
+            setTimeout(forceScrollToTop, 500);
             </script>
-            """, unsafe_allow_html=True)
+            """, height=0)
             
             # Show scroll notification
             st.info("🔝 **Scrolled to top!** Resource details are displayed below.", icon="✨")
@@ -361,6 +381,13 @@ def run(
                     if st.sidebar.button(r['title'], key=f"sidebar_{r['anchor']}", use_container_width=True, help="🔝 Click to view details - auto-scroll to top"):
                         st.session_state.selected_resource = r
                         st.session_state.scroll_to_top = True
+                        # Force immediate scroll before rerun
+                        st.markdown("""
+                        <script>
+                        window.scrollTo(0, 0);
+                        if (window.parent) window.parent.scrollTo(0, 0);
+                        </script>
+                        """, unsafe_allow_html=True)
                         st.rerun()
 
     # 4. RESOURCE LIST (Main content area)
@@ -396,6 +423,13 @@ def run(
                 ):
                     st.session_state.selected_resource = resource
                     st.session_state.scroll_to_top = True
+                    # Force immediate scroll before rerun
+                    st.markdown("""
+                    <script>
+                    window.scrollTo(0, 0);
+                    if (window.parent) window.parent.scrollTo(0, 0);
+                    </script>
+                    """, unsafe_allow_html=True)
                     st.rerun()
                 
                 # Brief preview
