@@ -141,52 +141,14 @@ def run(
         i = _add_dummy_info(i)  # Add dummy info where needed
         processed.append(i)
 
-    # Auto-scroll using Streamlit components method
+    # Show scroll message when resource selected
     if st.session_state.scroll_to_top:
-        # Use HTML anchor and meta refresh approach
-        st.markdown("""
-        <div id="top-anchor"></div>
-        <script>
-        // Force immediate scroll to top using multiple aggressive methods
-        window.scrollTo(0, 0);
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-        
-        // Try parent window methods
-        if (window.parent) {
-            window.parent.scrollTo(0, 0);
-            if (window.parent.document) {
-                window.parent.document.documentElement.scrollTop = 0;
-                window.parent.document.body.scrollTop = 0;
-            }
-        }
-        
-        // Streamlit specific containers
-        setTimeout(() => {
-            const elements = [
-                '[data-testid="stAppViewContainer"]',
-                '.main .block-container',
-                '[data-testid="stApp"]',
-                '.stApp',
-                'section.main'
-            ];
-            
-            elements.forEach(selector => {
-                const els = document.querySelectorAll(selector);
-                els.forEach(el => el.scrollTop = 0);
-                
-                if (window.parent) {
-                    const parentEls = window.parent.document.querySelectorAll(selector);
-                    parentEls.forEach(el => el.scrollTop = 0);
-                }
-            });
-        }, 10);
-        </script>
-        """, unsafe_allow_html=True)
+        st.info("� **ResRource selected!** Please scroll up to see the details in the info area above.", icon="⬆️")
         st.session_state.scroll_to_top = False  # Reset flag
 
-    # 1. MAIN TITLE (Always at the top)
+    # 1. MAIN TITLE (Always at the top) with anchor
     if show_title:
+        st.markdown('<a id="top"></a>', unsafe_allow_html=True)
         st.markdown(f"""
         <div style="
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -214,58 +176,14 @@ def run(
         if st.session_state.selected_resource:
             resource = st.session_state.selected_resource
             
-            # Use Streamlit components for more reliable JavaScript execution
-            components.html("""
+            # Try one more simple scroll method
+            st.markdown("""
             <script>
-            // Comprehensive scroll to top function
-            function forceScrollToTop() {
-                // Method 1: Direct window scroll
-                window.scrollTo(0, 0);
-                
-                // Method 2: Parent window scroll
-                if (window.parent && window.parent !== window) {
-                    window.parent.scrollTo(0, 0);
-                    
-                    // Method 3: Parent document elements
-                    if (window.parent.document) {
-                        window.parent.document.documentElement.scrollTop = 0;
-                        window.parent.document.body.scrollTop = 0;
-                    }
-                }
-                
-                // Method 4: All possible containers
-                const selectors = [
-                    '[data-testid="stAppViewContainer"]',
-                    '.main',
-                    '[data-testid="stApp"]',
-                    '.stApp',
-                    'section.main',
-                    '.block-container'
-                ];
-                
-                selectors.forEach(selector => {
-                    // Current window
-                    document.querySelectorAll(selector).forEach(el => {
-                        el.scrollTop = 0;
-                    });
-                    
-                    // Parent window
-                    if (window.parent && window.parent.document) {
-                        window.parent.document.querySelectorAll(selector).forEach(el => {
-                            el.scrollTop = 0;
-                        });
-                    }
-                });
-            }
-            
-            // Execute immediately and repeatedly
-            forceScrollToTop();
-            setTimeout(forceScrollToTop, 50);
-            setTimeout(forceScrollToTop, 100);
-            setTimeout(forceScrollToTop, 200);
-            setTimeout(forceScrollToTop, 500);
+            setTimeout(function() {
+                window.parent.scrollTo(0, 0);
+            }, 100);
             </script>
-            """, height=0)
+            """, unsafe_allow_html=True)
             
             # Show scroll notification
             st.info("🔝 **Scrolled to top!** Resource details are displayed below.", icon="✨")
@@ -378,16 +296,9 @@ def run(
         for group, items in by_group.items():
             with st.sidebar.expander(f"🏢 {group}", expanded=True):
                 for r in items:
-                    if st.sidebar.button(r['title'], key=f"sidebar_{r['anchor']}", use_container_width=True, help="🔝 Click to view details - auto-scroll to top"):
+                    if st.sidebar.button(r['title'], key=f"sidebar_{r['anchor']}", use_container_width=True, help="Click to view details - info will appear at the top"):
                         st.session_state.selected_resource = r
                         st.session_state.scroll_to_top = True
-                        # Force immediate scroll before rerun
-                        st.markdown("""
-                        <script>
-                        window.scrollTo(0, 0);
-                        if (window.parent) window.parent.scrollTo(0, 0);
-                        </script>
-                        """, unsafe_allow_html=True)
                         st.rerun()
 
     # 4. RESOURCE LIST (Main content area)
@@ -414,22 +325,15 @@ def run(
         cols = st.columns(2)
         for idx, resource in enumerate(items):
             with cols[idx % 2]:
-                # Resource title button with scroll indicator
+                # Resource title button
                 if st.button(
                     f"📄 {resource['title']}", 
                     key=f"main_{resource['anchor']}",
-                    help=f"🔝 Click to view details - will auto-scroll to top",
+                    help=f"Click to view details - info will appear at the top",
                     use_container_width=True
                 ):
                     st.session_state.selected_resource = resource
                     st.session_state.scroll_to_top = True
-                    # Force immediate scroll before rerun
-                    st.markdown("""
-                    <script>
-                    window.scrollTo(0, 0);
-                    if (window.parent) window.parent.scrollTo(0, 0);
-                    </script>
-                    """, unsafe_allow_html=True)
                     st.rerun()
                 
                 # Brief preview
