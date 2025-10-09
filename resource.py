@@ -125,10 +125,20 @@ def _extract_safe_keywords(resource):
 def _ai_chatbot_response(user_question, safe_resource_index):
     """AI-powered chatbot that uses LLM to match user questions to resources"""
     try:
+        st.info(f"🔍 Processing question: {user_question}")
         # Use LLM service for intelligent matching
         resource_id, ai_response = llm_service.match_resource(user_question, safe_resource_index)
+        
+        if resource_id:
+            st.success(f"✅ Found match: {resource_id}")
+        else:
+            st.warning("⚠️ No match found, using fallback")
+            
         return resource_id, ai_response
     except Exception as e:
+        st.error(f"❌ AI chatbot error: {e}")
+        import traceback
+        st.text(traceback.format_exc())
         # Fallback to simple keyword matching if LLM fails
         return _fallback_simple_matching(user_question, safe_resource_index)
 
