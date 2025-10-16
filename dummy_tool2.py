@@ -92,9 +92,13 @@ def run():
 
     # Model choice
     model_options = [
+        "DeepSeek-R1-Distill-Qwen-32B",
+        "DeepSeek-V3-1",
+        "gpt-oss-120b",
+        "Meta-Llama-3-1-8B-Instruct-FP8",
+        "Meta-Llama-3-3-70B-Instruct",
         "Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
-        "DeepSeek-R1-0528",
-        "Qwen3-235B-A22B-FP8",
+        "Qwen3-235B-A22B-Instruct-2507-FP8",
     ]
     selected_model = st.selectbox("Choose an AI model:", model_options)
 

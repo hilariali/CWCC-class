@@ -28,7 +28,7 @@ def summarize_chunk(text: str) -> str:
     )
     try:
         resp = client.chat.completions.create(
-            model="Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
+            model="DeepSeek-R1-Distill-Qwen-32B",
             messages=[{"role": "user", "content": prompt}],
         )
         return resp.choices[0].message.content
@@ -111,7 +111,7 @@ def run():
             with st.spinner("Thinking…"):
                 try:
                     resp = client.chat.completions.create(
-                        model="Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
+                        model="DeepSeek-R1-Distill-Qwen-32B",
                         messages=messages,
                     )
                     reply = resp.choices[0].message.content

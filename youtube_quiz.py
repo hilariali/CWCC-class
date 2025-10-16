@@ -176,7 +176,7 @@ def summarize_chunk(text: str, lang: str) -> str:
     prompt = f"Please summarize the following transcript chunk in {lang}:\n\n{text}"
     try:
         resp = client.chat.completions.create(
-            model="Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
+            model="DeepSeek-R1-Distill-Qwen-32B",
             messages=[{"role": "user", "content": prompt}],
         )
         return resp.choices[0].message.content
@@ -200,7 +200,7 @@ def generate_quiz(summary: str, lang: str, grade: str, num_questions: int) -> st
     )
     try:
         resp = client.chat.completions.create(
-            model="Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
+            model="DeepSeek-R1-Distill-Qwen-32B",
             messages=[{"role": "user", "content": prompt}],
         )
         return resp.choices[0].message.content
@@ -216,7 +216,7 @@ def modify_quiz(existing_quiz: str, instructions: str, lang: str) -> str:
     )
     try:
         resp = client.chat.completions.create(
-            model="Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
+            model="DeepSeek-R1-Distill-Qwen-32B",
             messages=[{"role": "user", "content": prompt}],
         )
         return resp.choices[0].message.content

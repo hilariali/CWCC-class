@@ -19,7 +19,7 @@ class ResourceLLMService:
                 api_key=st.secrets["OPENAI_API_KEY"],
                 base_url=st.secrets.get("OPENAI_BASE_URL"),
             )
-            self.model = "Meta-Llama-4-Maverick-17B-128E-Instruct-FP8"  # Same as other tools
+            self.model = "DeepSeek-R1-Distill-Qwen-32B"  # Default model
             st.success("🧠 LLM Service initialized successfully")
         except Exception as e:
             st.error(f"Failed to initialize LLM service: {e}")
