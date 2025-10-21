@@ -291,10 +291,15 @@ def run(
         st.markdown("*Ask me about any resource and I'll help you find the best matches!*")
     with col2:
         # AI status indicator
-        if llm_service.client:
-            st.success("🧠 AI Powered")
-            st.caption("Using DeepSeek-R1")
-        else:
+        try:
+            client = llm_service._get_client()
+            if client:
+                st.success("🧠 AI Powered")
+                st.caption("Using DeepSeek-R1")
+            else:
+                st.warning("⚡ Basic Mode")
+                st.caption("Keyword matching")
+        except:
             st.warning("⚡ Basic Mode")
             st.caption("Keyword matching")
     

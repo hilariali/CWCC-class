@@ -13,18 +13,27 @@ class ResourceLLMService:
     """Service class for LLM-powered resource matching"""
     
     def __init__(self):
-        """Initialize the LLM service with OpenAI client"""
-        try:
-            self.client = openai.OpenAI(
-                api_key=st.secrets["OPENAI_API_KEY"],
-                base_url=st.secrets.get("OPENAI_BASE_URL"),
-            )
-            self.model = "DeepSeek-R1-Distill-Qwen-32B"  # Default model
-            st.success("🧠 LLM Service initialized successfully")
-        except Exception as e:
-            st.error(f"Failed to initialize LLM service: {e}")
-            st.text(traceback.format_exc())
-            self.client = None
+        """Initialize the LLM service"""
+        self.client = None
+        self.model = "DeepSeek-R1-Distill-Qwen-32B"  # Default model
+    
+    def _get_client(self):
+        """Lazy initialization of OpenAI client"""
+        if self.client is None:
+            try:
+                # Use the same configuration as other working tools
+                self.client = openai.OpenAI(
+                    api_key=st.secrets["OPENAI_API_KEY"],
+                    base_url=st.secrets.get("OPENAI_BASE_URL"),
+                )
+                st.success("🧠 LLM Service initialized successfully")
+            except Exception as e:
+                st.error(f"Failed to initialize LLM service: {e}")
+                st.error(f"API Key available: {'OPENAI_API_KEY' in st.secrets}")
+                st.error(f"Base URL: {st.secrets.get('OPENAI_BASE_URL', 'Not set')}")
+                st.text(traceback.format_exc())
+                self.client = None
+        return self.client
     
     def create_system_prompt(self, safe_resource_index: List[Dict]) -> str:
         """Create system prompt with safe resource information"""
@@ -91,8 +100,9 @@ RESPONSE STYLE:
 """
 
     def match_resource(self, user_question: str, safe_resource_index: List[Dict]) -> Tuple[List[Dict], str]:
-        """Use LLM to match user question to resources, returning up to 3 ranked results"""
-        if not self.client:
+        """Use LLM to match user question to resources, returning up to 5 ranked results"""
+        client = self._get_client()
+        if not client:
             st.warning("⚠️ LLM client not available - using fallback")
             return [], "AI service is not available. Please try browsing the resources below."
         
@@ -101,7 +111,7 @@ RESPONSE STYLE:
             
             st.info(f"🤖 Sending query to LLM: {user_question[:50]}...")
             
-            response = self.client.chat.completions.create(
+            response = client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -162,7 +172,8 @@ RESPONSE STYLE:
 
     def generate_conversational_response(self, user_question: str, matched_resource: Dict, conversation_history: List[Dict]) -> str:
         """Generate a more conversational response about the matched resource"""
-        if not self.client:
+        client = self._get_client()
+        if not client:
             return f"I found **{matched_resource['title']}** which should help with your question!"
         
         try:
@@ -184,7 +195,7 @@ Generate a brief, friendly response (max 2 sentences) that:
 Be conversational and helpful, but don't make up details about the resource.
 """
 
-            response = self.client.chat.completions.create(
+            response = client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.7,
