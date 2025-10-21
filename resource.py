@@ -122,35 +122,34 @@ def _extract_safe_keywords(resource):
     
     return list(set(keywords))  # Remove duplicates
 
+def _get_suggested_questions():
+    """Return a list of suggested questions when no results are found"""
+    return [
+        "How do I book a venue or classroom?",
+        "I need help with student discipline forms",
+        "Where can I find design tools like Canva?",
+        "How do I report facility issues?",
+        "I need the teacher duty schedule",
+        "Where is the student attendance system?",
+        "How do I access the morning assembly announcements?",
+        "I need help with parking registration",
+        "Where can I find the campus floor plan?",
+        "How do I submit a referral form?"
+    ]
+
 def _ai_chatbot_response(user_question, safe_resource_index):
     """AI-powered chatbot that uses LLM to match user questions to resources"""
-    st.info("🚀 Starting AI chatbot response...")
-    st.info(f"📝 Question: '{user_question}'")
-    st.info(f"📊 Resource index size: {len(safe_resource_index)}")
-    
     try:
-        st.info("🔧 Calling LLM service...")
         # Use LLM service for intelligent matching
         results, ai_response = llm_service.match_resource(user_question, safe_resource_index)
         
-        st.info(f"📋 LLM service returned: {len(results)} results")
-        st.info(f"💬 AI response: {ai_response[:100]}...")
-        
-        if results:
-            st.success(f"✅ Found {len(results)} match(es)")
-            for i, result in enumerate(results):
-                st.info(f"  #{i+1}: {result.get('resource_id')} (confidence: {result.get('confidence', 0):.2f})")
-        else:
-            st.warning("⚠️ No matches found from LLM, using fallback")
+        # If no results found, add suggested questions
+        if not results:
+            suggestions = _get_suggested_questions()
+            ai_response += f"\n\n**Try asking about:**\n" + "\n".join([f"• {q}" for q in suggestions])
             
         return results, ai_response
     except Exception as e:
-        st.error(f"❌ AI chatbot error: {e}")
-        st.error(f"🔍 Error type: {type(e).__name__}")
-        import traceback
-        st.text("📋 Full traceback:")
-        st.text(traceback.format_exc())
-        st.info("🔄 Falling back to simple keyword matching...")
         # Fallback to simple keyword matching if LLM fails
         return _fallback_simple_matching(user_question, safe_resource_index)
 
@@ -183,7 +182,9 @@ def _fallback_simple_matching(user_question, safe_resource_index):
     matches.sort(key=lambda x: x[1], reverse=True)
     
     if not matches:
-        return [], "I couldn't find any resources matching your question. Please try rephrasing or browse the resources below."
+        suggestions = _get_suggested_questions()
+        response = "I couldn't find any resources matching your question.\n\n**Try asking about:**\n" + "\n".join([f"• {q}" for q in suggestions])
+        return [], response
     
     # Convert top 3 matches to result format
     results = []
@@ -297,8 +298,8 @@ def run(
     # *** 1. CHATBOT INTERFACE (Always visible at the top) ***
     st.markdown("### 🤖 AI Resource Assistant")
     
-    # AI status and test interface
-    col1, col2, col3 = st.columns([2, 1, 1])
+    # AI status interface
+    col1, col2 = st.columns([3, 1])
     with col1:
         st.markdown("*Ask me about any resource and I'll help you find the best matches!*")
     with col2:
@@ -307,17 +308,13 @@ def run(
             client = llm_service._get_client()
             if client:
                 st.success("🧠 AI Powered")
-                st.caption("Using DeepSeek-R1")
+                st.caption("Smart matching")
             else:
-                st.warning("⚡ Basic Mode")
+                st.info("⚡ Basic Mode")
                 st.caption("Keyword matching")
         except:
-            st.warning("⚡ Basic Mode")
+            st.info("⚡ Basic Mode")
             st.caption("Keyword matching")
-    with col3:
-        # Test button for debugging
-        if st.button("🧪 Test API", help="Test the LLM API connection"):
-            llm_service.test_connection()
     
     # Create safe resource index for chatbot (no sensitive details)
     safe_index = _get_resource_index_for_chatbot(processed)

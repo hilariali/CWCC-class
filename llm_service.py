@@ -20,34 +20,13 @@ class ResourceLLMService:
     def _get_client(self):
         """Lazy initialization of OpenAI client"""
         if self.client is None:
-            st.info("🔧 Initializing LLM client...")
             try:
-                # Log configuration details
-                api_key_available = 'OPENAI_API_KEY' in st.secrets
-                base_url = st.secrets.get('OPENAI_BASE_URL', 'Not set')
-                
-                st.info(f"📋 Config check - API Key: {'✅' if api_key_available else '❌'}, Base URL: {base_url}")
-                
-                if not api_key_available:
-                    st.error("❌ OPENAI_API_KEY not found in secrets!")
-                    return None
-                
                 # Use the same configuration as other working tools
                 self.client = openai.OpenAI(
                     api_key=st.secrets["OPENAI_API_KEY"],
                     base_url=st.secrets.get("OPENAI_BASE_URL"),
                 )
-                st.success(f"🧠 LLM Service initialized successfully with model: {self.model}")
-                
-            except KeyError as e:
-                st.error(f"❌ Missing secret key: {e}")
-                st.error("Available secrets keys:")
-                st.write(list(st.secrets.keys()) if hasattr(st, 'secrets') else "No secrets available")
-                self.client = None
             except Exception as e:
-                st.error(f"❌ Failed to initialize LLM service: {e}")
-                st.error(f"Error type: {type(e).__name__}")
-                st.text(traceback.format_exc())
                 self.client = None
         return self.client
     
@@ -95,21 +74,12 @@ MATCHING GUIDELINES:
 
     def match_resource(self, user_question: str, safe_resource_index: List[Dict]) -> Tuple[List[Dict], str]:
         """Use LLM to match user question to resources, returning up to 5 ranked results"""
-        st.info(f"🔍 Starting resource matching for: '{user_question}'")
-        st.info(f"📊 Available resources: {len(safe_resource_index)}")
-        
         client = self._get_client()
         if not client:
-            st.warning("⚠️ LLM client not available - using fallback")
             return [], "AI service is not available. Please try browsing the resources below."
         
         try:
-            st.info("📝 Creating system prompt...")
             system_prompt = self.create_system_prompt(safe_resource_index)
-            st.info(f"📏 System prompt length: {len(system_prompt)} characters")
-            
-            st.info(f"🤖 Sending query to LLM model: {self.model}")
-            st.info(f"💬 User question: {user_question}")
             
             # Use the exact same format as working tools (dummy_tool1, dummy_tool2, youtube_quiz)
             response = client.chat.completions.create(
@@ -120,19 +90,10 @@ MATCHING GUIDELINES:
                 ],
             )
             
-            st.info("📨 API call successful!")
-            
             # Handle response exactly like working tools
             ai_response = response.choices[0].message.content
             if not ai_response:
-                st.error("❌ Received empty response from API")
                 return [], "I received an empty response. Please try again."
-            
-            st.success(f"✅ LLM Response received: {len(ai_response)} characters")
-            
-            # Log the raw response for debugging
-            with st.expander("🔍 Debug: Raw LLM Response", expanded=False):
-                st.text(ai_response)
             
             # Parse the structured response
             try:
@@ -152,8 +113,6 @@ MATCHING GUIDELINES:
                     elif line.startswith("RESPONSE:"):
                         response_line = line.replace("RESPONSE:", "").strip()
                 
-                st.info(f"📋 Parsed - IDs: '{resource_ids_line}', Confidence: '{confidence_line}'")
-                
                 # Process resource IDs
                 valid_results = []
                 valid_ids = [r["id"] for r in safe_resource_index]
@@ -170,41 +129,14 @@ MATCHING GUIDELINES:
                                 "reasoning": reasoning_line,
                                 "rank": i + 1
                             })
-                            st.info(f"📊 Match #{i+1}: {resource_id} (confidence: {confidence - (i * 0.1):.2f})")
-                        else:
-                            st.warning(f"⚠️ Invalid resource ID returned: {resource_id}")
                 
                 ai_message = response_line if response_line else "I found some resources that might help!"
                 return valid_results, ai_message
                 
             except Exception as e:
-                st.error(f"❌ Response parsing failed: {e}")
-                st.error(f"Raw response: {ai_response}")
                 return [], "I'm having trouble processing your request. Please try rephrasing your question or browse the resources below."
         
         except Exception as e:
-            st.error(f"❌ LLM service error: {e}")
-            st.error(f"🔍 Error type: {type(e).__name__}")
-            st.error(f"🔍 Error details: {str(e)}")
-            
-            # Check if it's an API-related error
-            if hasattr(e, 'response'):
-                st.error(f"🌐 HTTP Status: {getattr(e.response, 'status_code', 'Unknown')}")
-                st.error(f"🌐 Response: {getattr(e.response, 'text', 'No response text')}")
-            
-            # Check if it's an authentication error
-            if 'auth' in str(e).lower() or 'key' in str(e).lower():
-                st.error("🔑 This appears to be an authentication issue!")
-                st.error("💡 Check if your API key is correct and has proper permissions")
-            
-            # Check if it's a model error
-            if 'model' in str(e).lower():
-                st.error(f"🤖 This appears to be a model-related issue!")
-                st.error(f"💡 Model being used: {self.model}")
-                st.error("💡 Check if this model is available in your API endpoint")
-            
-            st.text("📋 Full traceback:")
-            st.text(traceback.format_exc())
             return [], "I'm experiencing technical difficulties. Please try browsing the resources below."
 
     def generate_conversational_response(self, user_question: str, matched_resource: Dict, conversation_history: List[Dict]) -> str:
