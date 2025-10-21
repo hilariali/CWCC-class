@@ -133,19 +133,22 @@ RESPONSE STYLE:
             st.info(f"🤖 Sending query to LLM model: {self.model}")
             st.info(f"💬 User question: {user_question}")
             
+            # Use the exact same format as working tools (dummy_tool1, dummy_tool2, youtube_quiz)
             response = client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_question}
                 ],
-                temperature=0.3,  # Lower temperature for more consistent responses
-                max_tokens=500
             )
             
             st.info("📨 API call successful!")
             
-            ai_response = response.choices[0].message.content.strip()
+            # Handle response exactly like working tools
+            ai_response = response.choices[0].message.content
+            if not ai_response:
+                st.error("❌ Received empty response from API")
+                return [], "I received an empty response. Please try again."
             st.success(f"✅ LLM Response received: {len(ai_response)} characters")
             
             # Log the raw response for debugging
@@ -239,14 +242,14 @@ Generate a brief, friendly response (max 2 sentences) that:
 Be conversational and helpful, but don't make up details about the resource.
 """
 
+            # Use the exact same format as working tools
             response = client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.7,
-                max_tokens=100
             )
             
-            return response.choices[0].message.content.strip()
+            result = response.choices[0].message.content
+            return result if result else f"I found **{matched_resource['title']}** which should help with your question!"
             
         except Exception as e:
             st.error(f"Conversational response error: {e}")
@@ -264,16 +267,20 @@ Be conversational and helpful, but don't make up details about the resource.
         
         try:
             st.info("📡 Sending test request...")
+            # Use the exact same format as working tools
             response = client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": "Hello, respond with just 'OK'"}],
-                max_tokens=5,
-                temperature=0
             )
             
-            test_response = response.choices[0].message.content.strip()
-            st.success(f"✅ Test successful! Response: '{test_response}'")
-            return True
+            # Handle response exactly like working tools
+            test_response = response.choices[0].message.content
+            if test_response:
+                st.success(f"✅ Test successful! Response: '{test_response}'")
+                return True
+            else:
+                st.error("❌ Test failed: Received empty response")
+                return False
             
         except Exception as e:
             st.error(f"❌ Test failed: {e}")
