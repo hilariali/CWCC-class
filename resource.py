@@ -15,33 +15,244 @@ except:
 # Resource Data (All in one file)
 # ---------------------------
 RESOURCES: List[Dict[str, Optional[str]]] = [
-    # --- School Innovation Development (from PDF) ---
-    {"id": "venue-booking-form", "title": "Venue Booking Form", "description": "For booking school venues (TKN/Tiana).", "placeholder_text": "Please contact the office to access the venue booking form.", "group": "School Innovation Development"},
-    {"id": "facility-report-form", "title": "Abnormalities in Campus Facilities Report Form", "description": "Report campus facility issues (Anson/Yan).", "placeholder_text": "Please contact the facility management to report issues.", "group": "School Innovation Development"},
-    {"id": "guest-parking-form", "title": "Guest Car Parking Registration Form", "description": "Register guest vehicles (Tiana/Yan).", "placeholder_text": "Please contact security to register guest vehicles.", "group": "School Innovation Development"},
-    {"id": "campus-floor-plan", "title": "Floor Plan of Campus", "description": "Google Sheet containing the campus layout.", "placeholder_text": "Campus floor plan will be available through the directory system.", "group": "School Innovation Development"},
-    {"id": "staff-seating-plan", "title": "Staff Room Seating Plan", "description": "Staff seating arrangements.", "placeholder_text": "Staff seating arrangements will be available through the directory system.", "group": "School Innovation Development"},
-    {"id": "classroom-seating-chart", "title": "Classroom Seating Chart", "description": "Classroom seating charts.", "placeholder_text": "Classroom seating charts will be available through the directory system.", "group": "School Innovation Development"},
+    
+    # ========================================
+    # SCHOOL INNOVATION DEVELOPMENT
+    # ========================================
+    {
+        "id": "venue-booking-form",
+        "title": "Venue Booking Form",
+        "description": "For booking school venues (TKN/Tiana).",
+        "placeholder_text": "Please contact the office to access the venue booking form.",
+        "group": "School Innovation Development",
+        # "url": "https://your-venue-booking-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "facility-report-form",
+        "title": "Abnormalities in Campus Facilities Report Form",
+        "description": "Report campus facility issues (Anson/Yan).",
+        "placeholder_text": "Please contact the facility management to report issues.",
+        "group": "School Innovation Development",
+        # "url": "https://your-facility-report-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "guest-parking-form",
+        "title": "Guest Car Parking Registration Form",
+        "description": "Register guest vehicles (Tiana/Yan).",
+        "placeholder_text": "Please contact security to register guest vehicles.",
+        "group": "School Innovation Development",
+        # "url": "https://your-parking-form-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "campus-floor-plan",
+        "title": "Floor Plan of Campus",
+        "description": "Google Sheet containing the campus layout.",
+        "placeholder_text": "Campus floor plan will be available through the directory system.",
+        "group": "School Innovation Development",
+        # "url": "https://docs.google.com/spreadsheets/your-floor-plan",  # Add URL here if available
+    },
+    
+    {
+        "id": "staff-seating-plan",
+        "title": "Staff Room Seating Plan",
+        "description": "Staff seating arrangements.",
+        "placeholder_text": "Staff seating arrangements will be available through the directory system.",
+        "group": "School Innovation Development",
+        # "url": "https://your-seating-plan-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "classroom-seating-chart",
+        "title": "Classroom Seating Chart",
+        "description": "Classroom seating charts.",
+        "placeholder_text": "Classroom seating charts will be available through the directory system.",
+        "group": "School Innovation Development",
+        # "url": "https://your-classroom-chart-url.com",  # Add URL here if available
+    },
 
-    # --- 2526 Student Innovation Development (from Word) ---
-    {"id": "misbehaviour-form", "title": "Misbehaviour Form", "description": "Card & uniform ONLY.", "placeholder_text": "Please contact student affairs to access the misbehaviour form.", "page_function": "misbehaviour_form", "group": "Student Innovation Development"},
-    {"id": "teacher-duty-list", "title": "Teacher On-duty List (教師當值)", "description": "Schedules (1/9–4/9 and from 5/9 onwards).", "placeholder_text": "Teacher duty schedules will be available through the directory system.", "page_function": "teacher_duty", "group": "Student Innovation Development"},
-    {"id": "morning-assembly", "title": "Morning Assembly – Announcement / Card Issue (早會宣佈/學生証)", "description": "CT must check daily.", "placeholder_text": "Morning assembly announcements will be available through the directory system.", "page_function": "morning_assembly", "group": "Student Innovation Development"},
-    {"id": "attendance-record", "title": "Attendance & Behavioural Record / Sunshine Call", "description": "", "placeholder_text": "Attendance and behavioural records will be available through the directory system.", "page_function": "attendance_record", "group": "Student Innovation Development"},
-    {"id": "class-committee-list", "title": "Class Committee List (1st Term)", "description": "", "placeholder_text": "Class committee information will be available through the directory system.", "page_function": "class_committee", "group": "Student Innovation Development"},
-    {"id": "credit-warning-form", "title": "Credit/Warning Form", "description": "Please discuss with Form Teacher first.", "placeholder_text": "Please contact your form teacher to access the credit/warning form.", "page_function": "credit_warning", "group": "Student Innovation Development"},
-    {"id": "referral-form", "title": "Referral Form", "description": "Refer to social worker.", "placeholder_text": "Please contact student counseling services for referral forms.", "page_function": "referral_form", "group": "Student Innovation Development"},
-    {"id": "class-building-materials", "title": "Class Building Materials", "description": "", "placeholder_text": "Class building materials will be available through the directory system.", "page_function": "class_materials", "group": "Student Innovation Development"},
-    {"id": "gd-handbook", "title": "G & D Handbook", "description": "", "placeholder_text": "Guidance and Discipline handbook will be available through the directory system.", "page_function": "gd_handbook", "group": "Student Innovation Development"},
-    {"id": "conduct-evaluation", "title": "e-Conduct Evaluation (To be updated)", "description": "", "placeholder_text": "Conduct evaluation system will be available through the directory system.", "page_function": "conduct_eval", "group": "Student Innovation Development"},
-    {"id": "post-exam-activities", "title": "Post Exam Activities (To be updated)", "description": "", "placeholder_text": "Post exam activities information will be available through the directory system.", "page_function": "post_exam", "group": "Student Innovation Development"},
-    {"id": "ramadan-list", "title": "Ramadan List (To be updated)", "description": "", "placeholder_text": "Ramadan schedule information will be available through the directory system.", "page_function": "ramadan_list", "group": "Student Innovation Development"},
-    {"id": "weekly-assembly", "title": "Weekly Assembly (2526 週會節)", "description": "", "placeholder_text": "Weekly assembly information will be available through the directory system.", "page_function": "weekly_assembly", "group": "Student Innovation Development"},
-    {"id": "class-teachers", "title": "Class Teachers", "description": "", "placeholder_text": "Class teacher information will be available through the directory system.", "page_function": "class_teachers", "group": "Student Innovation Development"},
+    # ========================================
+    # STUDENT INNOVATION DEVELOPMENT
+    # ========================================
+    {
+        "id": "misbehaviour-form",
+        "title": "Misbehaviour Form",
+        "description": "Card & uniform ONLY.",
+        "placeholder_text": "Please contact student affairs to access the misbehaviour form.",
+        "page_function": "misbehaviour_form",
+        "group": "Student Innovation Development",
+        # "url": "https://your-misbehaviour-form-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "teacher-duty-list",
+        "title": "Teacher On-duty List (教師當值)",
+        "description": "Schedules (1/9–4/9 and from 5/9 onwards).",
+        "placeholder_text": "Teacher duty schedules will be available through the directory system.",
+        "page_function": "teacher_duty",
+        "group": "Student Innovation Development",
+        # "url": "https://your-duty-schedule-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "morning-assembly",
+        "title": "Morning Assembly – Announcement / Card Issue (早會宣佈/學生証)",
+        "description": "CT must check daily.",
+        "placeholder_text": "Morning assembly announcements will be available through the directory system.",
+        "page_function": "morning_assembly",
+        "group": "Student Innovation Development",
+        # "url": "https://your-morning-assembly-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "attendance-record",
+        "title": "Attendance & Behavioural Record / Sunshine Call",
+        "description": "Student attendance tracking and behavioral monitoring system.",
+        "placeholder_text": "Attendance and behavioural records will be available through the directory system.",
+        "page_function": "attendance_record",
+        "group": "Student Innovation Development",
+        # "url": "https://your-attendance-system-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "class-committee-list",
+        "title": "Class Committee List (1st Term)",
+        "description": "Student leadership positions and class representatives.",
+        "placeholder_text": "Class committee information will be available through the directory system.",
+        "page_function": "class_committee",
+        "group": "Student Innovation Development",
+        # "url": "https://your-committee-list-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "credit-warning-form",
+        "title": "Credit/Warning Form",
+        "description": "Please discuss with Form Teacher first.",
+        "placeholder_text": "Please contact your form teacher to access the credit/warning form.",
+        "page_function": "credit_warning",
+        "group": "Student Innovation Development",
+        # "url": "https://your-credit-warning-form-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "referral-form",
+        "title": "Referral Form",
+        "description": "Refer to social worker.",
+        "placeholder_text": "Please contact student counseling services for referral forms.",
+        "page_function": "referral_form",
+        "group": "Student Innovation Development",
+        # "url": "https://your-referral-form-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "class-building-materials",
+        "title": "Class Building Materials",
+        "description": "Educational resources and supplies for classroom activities.",
+        "placeholder_text": "Class building materials will be available through the directory system.",
+        "page_function": "class_materials",
+        "group": "Student Innovation Development",
+        # "url": "https://your-materials-inventory-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "gd-handbook",
+        "title": "G & D Handbook",
+        "description": "Guidance and Discipline handbook with school policies.",
+        "placeholder_text": "Guidance and Discipline handbook will be available through the directory system.",
+        "page_function": "gd_handbook",
+        "group": "Student Innovation Development",
+        # "url": "https://your-handbook-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "conduct-evaluation",
+        "title": "e-Conduct Evaluation (To be updated)",
+        "description": "Digital student conduct evaluation system.",
+        "placeholder_text": "Conduct evaluation system will be available through the directory system.",
+        "page_function": "conduct_eval",
+        "group": "Student Innovation Development",
+        # "url": "https://your-conduct-eval-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "post-exam-activities",
+        "title": "Post Exam Activities (To be updated)",
+        "description": "Activities and programs scheduled after examinations.",
+        "placeholder_text": "Post exam activities information will be available through the directory system.",
+        "page_function": "post_exam",
+        "group": "Student Innovation Development",
+        # "url": "https://your-post-exam-activities-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "ramadan-list",
+        "title": "Ramadan List (To be updated)",
+        "description": "Special accommodations and schedules for Muslim students during Ramadan.",
+        "placeholder_text": "Ramadan schedule information will be available through the directory system.",
+        "page_function": "ramadan_list",
+        "group": "Student Innovation Development",
+        # "url": "https://your-ramadan-schedule-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "weekly-assembly",
+        "title": "Weekly Assembly (2526 週會節)",
+        "description": "Weekly school assembly schedules and programs.",
+        "placeholder_text": "Weekly assembly information will be available through the directory system.",
+        "page_function": "weekly_assembly",
+        "group": "Student Innovation Development",
+        # "url": "https://your-weekly-assembly-url.com",  # Add URL here if available
+    },
+    
+    {
+        "id": "class-teachers",
+        "title": "Class Teachers",
+        "description": "Directory of homeroom teachers and their contact information.",
+        "placeholder_text": "Class teacher information will be available through the directory system.",
+        "page_function": "class_teachers",
+        "group": "Student Innovation Development",
+        # "url": "https://your-teacher-directory-url.com",  # Add URL here if available
+    },
 
-    # --- Additional Tools ---
-    {"id": "canva-tool", "title": "Canva", "description": "Design resources login — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#", "placeholder_text": "Canva design tool access will be available through the directory system.", "page_function": "canva_tool", "group": "Additional Tools"},
-    {"id": "filmora-tool", "title": "Filmora (Wondershare)", "description": "Video editing software — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#", "placeholder_text": "Filmora video editing software access will be available through the directory system.", "page_function": "filmora_tool", "group": "Additional Tools"},
+    # ========================================
+    # ADDITIONAL TOOLS
+    # ========================================
+    {
+        "id": "canva-tool",
+        "title": "Canva",
+        "description": "Design resources login — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#",
+        "placeholder_text": "Canva design tool access will be available through the directory system.",
+        "page_function": "canva_tool",
+        "group": "Additional Tools",
+        "url": "https://www.canva.com/login",  # Direct link to Canva
+    },
+    
+    {
+        "id": "filmora-tool",
+        "title": "Filmora (Wondershare)",
+        "description": "Video editing software — Email: designcwcc@cwcc.edu.hk / Password: CWCCstandas1#",
+        "placeholder_text": "Filmora video editing software access will be available through the directory system.",
+        "page_function": "filmora_tool",
+        "group": "Additional Tools",
+        "url": "https://filmora.wondershare.com/",  # Direct link to Filmora
+    },
+    
+    # ========================================
+    # ADD NEW RESOURCES BELOW THIS LINE
+    # ========================================
+    # Template for new resource:
+    # {
+    #     "id": "your-resource-id",
+    #     "title": "Your Resource Title",
+    #     "description": "Brief description of what this resource does.",
+    #     "placeholder_text": "Instructions on how to access this resource.",
+    #     "group": "Your Department/Category",
+    #     "url": "https://your-direct-link.com",  # Optional: direct link
+    #     "page_function": "function_name",  # Optional: if it has a custom page
+    # },
+    
 ]
 
 # ---------------------------
