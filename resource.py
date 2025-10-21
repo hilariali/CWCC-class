@@ -122,6 +122,22 @@ def _extract_safe_keywords(resource):
     
     return list(set(keywords))  # Remove duplicates
 
+def _handle_suggestion(question, safe_index, processed):
+    """Helper function to handle suggestion button clicks"""
+    st.session_state.chat_messages.append({"role": "user", "content": question})
+    results, bot_response = _ai_chatbot_response(question, safe_index)
+    st.session_state.chat_messages.append({"role": "assistant", "content": bot_response})
+    if results:
+        st.session_state.chat_results = results
+        top_result_id = results[0]["resource_id"]
+        for resource in processed:
+            if resource.get("id") == top_result_id:
+                st.session_state.selected_resource = resource
+                break
+    else:
+        st.session_state.chat_results = []
+    st.rerun()
+
 def _get_suggested_questions():
     """Return a list of suggested questions when no results are found"""
     return [
@@ -298,32 +314,10 @@ def run(
     # *** 1. CHATBOT INTERFACE (Always visible at the top) ***
     st.markdown("### 🤖 AI Resource Assistant")
     
-    # AI status interface
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        st.markdown("*Ask me about any resource and I'll help you find the best matches!*")
-    with col2:
-        # AI status indicator
-        try:
-            client = llm_service._get_client()
-            if client:
-                st.success("🧠 AI Powered")
-                st.caption("Smart matching")
-            else:
-                st.info("⚡ Basic Mode")
-                st.caption("Keyword matching")
-        except:
-            st.info("⚡ Basic Mode")
-            st.caption("Keyword matching")
+    st.markdown("*Ask me about any resource and I'll help you find the best matches!*")
     
     # Create safe resource index for chatbot (no sensitive details)
     safe_index = _get_resource_index_for_chatbot(processed)
-    
-    # Chat interface
-    st.markdown("""
-    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin: 15px 0; border: 1px solid #dee2e6;">
-    </div>
-    """, unsafe_allow_html=True)
     
     # Display chat messages
     if st.session_state.chat_messages:
@@ -341,102 +335,59 @@ def run(
                 </div>
                 """, unsafe_allow_html=True)
     
-    # Chat input
-    user_question = st.text_input(
-        "Ask about resources:",
-        placeholder="e.g., 'How do I book a venue?' or 'I need help with student discipline'",
-        key="chat_input"
-    )
+    # Chat input with Enter key support
+    user_question = st.chat_input("Ask about resources... (e.g., 'How do I book a venue?' or 'I need help with student discipline')")
     
-    col1, col2, col3 = st.columns([1, 1, 2])
-    with col1:
-        if st.button("Send", key="send_chat", disabled=not user_question.strip()):
-            if user_question.strip():
-                # Add user message
-                st.session_state.chat_messages.append({
-                    "role": "user",
-                    "content": user_question
-                })
-                
-                # Get AI chatbot response
-                results, bot_response = _ai_chatbot_response(user_question, safe_index)
-                
-                # Add bot response
-                st.session_state.chat_messages.append({
-                    "role": "assistant",
-                    "content": bot_response
-                })
-                
-                # Store multiple results for display
-                if results:
-                    st.session_state.chat_results = results
-                    # Set the top result as selected by default
-                    top_result_id = results[0]["resource_id"]
-                    for resource in processed:
-                        if resource.get("id") == top_result_id:
-                            st.session_state.selected_resource = resource
-                            break
-                else:
-                    st.session_state.chat_results = []
-                
-                st.rerun()
-    
-    with col2:
-        if st.button("Clear Chat", key="clear_chat"):
-            st.session_state.chat_messages = []
+    if user_question:
+        # Add user message
+        st.session_state.chat_messages.append({
+            "role": "user",
+            "content": user_question
+        })
+        
+        # Get AI chatbot response
+        results, bot_response = _ai_chatbot_response(user_question, safe_index)
+        
+        # Add bot response
+        st.session_state.chat_messages.append({
+            "role": "assistant",
+            "content": bot_response
+        })
+        
+        # Store multiple results for display
+        if results:
+            st.session_state.chat_results = results
+            # Set the top result as selected by default
+            top_result_id = results[0]["resource_id"]
+            for resource in processed:
+                if resource.get("id") == top_result_id:
+                    st.session_state.selected_resource = resource
+                    break
+        else:
             st.session_state.chat_results = []
-            st.rerun()
+        
+        st.rerun()
+    
+    # Clear chat button
+    if st.button("🗑️ Clear Chat", key="clear_chat"):
+        st.session_state.chat_messages = []
+        st.session_state.chat_results = []
+        st.rerun()
     
     # Quick suggestion buttons
     st.markdown("**Quick suggestions:**")
     col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("🏢 Venue booking", key="suggest1"):
-            st.session_state.chat_messages.append({"role": "user", "content": "How do I book a venue?"})
-            results, bot_response = _ai_chatbot_response("How do I book a venue?", safe_index)
-            st.session_state.chat_messages.append({"role": "assistant", "content": bot_response})
-            if results:
-                st.session_state.chat_results = results
-                top_result_id = results[0]["resource_id"]
-                for resource in processed:
-                    if resource.get("id") == top_result_id:
-                        st.session_state.selected_resource = resource
-                        break
-            else:
-                st.session_state.chat_results = []
-            st.rerun()
+            _handle_suggestion("How do I book a venue?", safe_index, processed)
     
     with col2:
         if st.button("📝 Student discipline", key="suggest2"):
-            st.session_state.chat_messages.append({"role": "user", "content": "Student discipline form"})
-            results, bot_response = _ai_chatbot_response("Student discipline form", safe_index)
-            st.session_state.chat_messages.append({"role": "assistant", "content": bot_response})
-            if results:
-                st.session_state.chat_results = results
-                top_result_id = results[0]["resource_id"]
-                for resource in processed:
-                    if resource.get("id") == top_result_id:
-                        st.session_state.selected_resource = resource
-                        break
-            else:
-                st.session_state.chat_results = []
-            st.rerun()
+            _handle_suggestion("Student discipline form", safe_index, processed)
     
     with col3:
         if st.button("🎨 Design tools", key="suggest3"):
-            st.session_state.chat_messages.append({"role": "user", "content": "Design and graphics tools"})
-            results, bot_response = _ai_chatbot_response("Design and graphics tools", safe_index)
-            st.session_state.chat_messages.append({"role": "assistant", "content": bot_response})
-            if results:
-                st.session_state.chat_results = results
-                top_result_id = results[0]["resource_id"]
-                for resource in processed:
-                    if resource.get("id") == top_result_id:
-                        st.session_state.selected_resource = resource
-                        break
-            else:
-                st.session_state.chat_results = []
-            st.rerun()
+            _handle_suggestion("Design and graphics tools", safe_index, processed)
     
     st.markdown("---")
 
