@@ -20,17 +20,33 @@ class ResourceLLMService:
     def _get_client(self):
         """Lazy initialization of OpenAI client"""
         if self.client is None:
+            st.info("🔧 Initializing LLM client...")
             try:
+                # Log configuration details
+                api_key_available = 'OPENAI_API_KEY' in st.secrets
+                base_url = st.secrets.get('OPENAI_BASE_URL', 'Not set')
+                
+                st.info(f"📋 Config check - API Key: {'✅' if api_key_available else '❌'}, Base URL: {base_url}")
+                
+                if not api_key_available:
+                    st.error("❌ OPENAI_API_KEY not found in secrets!")
+                    return None
+                
                 # Use the same configuration as other working tools
                 self.client = openai.OpenAI(
                     api_key=st.secrets["OPENAI_API_KEY"],
                     base_url=st.secrets.get("OPENAI_BASE_URL"),
                 )
-                st.success("🧠 LLM Service initialized successfully")
+                st.success(f"🧠 LLM Service initialized successfully with model: {self.model}")
+                
+            except KeyError as e:
+                st.error(f"❌ Missing secret key: {e}")
+                st.error("Available secrets keys:")
+                st.write(list(st.secrets.keys()) if hasattr(st, 'secrets') else "No secrets available")
+                self.client = None
             except Exception as e:
-                st.error(f"Failed to initialize LLM service: {e}")
-                st.error(f"API Key available: {'OPENAI_API_KEY' in st.secrets}")
-                st.error(f"Base URL: {st.secrets.get('OPENAI_BASE_URL', 'Not set')}")
+                st.error(f"❌ Failed to initialize LLM service: {e}")
+                st.error(f"Error type: {type(e).__name__}")
                 st.text(traceback.format_exc())
                 self.client = None
         return self.client
@@ -101,15 +117,21 @@ RESPONSE STYLE:
 
     def match_resource(self, user_question: str, safe_resource_index: List[Dict]) -> Tuple[List[Dict], str]:
         """Use LLM to match user question to resources, returning up to 5 ranked results"""
+        st.info(f"🔍 Starting resource matching for: '{user_question}'")
+        st.info(f"📊 Available resources: {len(safe_resource_index)}")
+        
         client = self._get_client()
         if not client:
             st.warning("⚠️ LLM client not available - using fallback")
             return [], "AI service is not available. Please try browsing the resources below."
         
         try:
+            st.info("📝 Creating system prompt...")
             system_prompt = self.create_system_prompt(safe_resource_index)
+            st.info(f"📏 System prompt length: {len(system_prompt)} characters")
             
-            st.info(f"🤖 Sending query to LLM: {user_question[:50]}...")
+            st.info(f"🤖 Sending query to LLM model: {self.model}")
+            st.info(f"💬 User question: {user_question}")
             
             response = client.chat.completions.create(
                 model=self.model,
@@ -120,6 +142,8 @@ RESPONSE STYLE:
                 temperature=0.3,  # Lower temperature for more consistent responses
                 max_tokens=500
             )
+            
+            st.info("📨 API call successful!")
             
             ai_response = response.choices[0].message.content.strip()
             st.success(f"✅ LLM Response received: {len(ai_response)} characters")
@@ -167,6 +191,26 @@ RESPONSE STYLE:
         
         except Exception as e:
             st.error(f"❌ LLM service error: {e}")
+            st.error(f"🔍 Error type: {type(e).__name__}")
+            st.error(f"🔍 Error details: {str(e)}")
+            
+            # Check if it's an API-related error
+            if hasattr(e, 'response'):
+                st.error(f"🌐 HTTP Status: {getattr(e.response, 'status_code', 'Unknown')}")
+                st.error(f"🌐 Response: {getattr(e.response, 'text', 'No response text')}")
+            
+            # Check if it's an authentication error
+            if 'auth' in str(e).lower() or 'key' in str(e).lower():
+                st.error("🔑 This appears to be an authentication issue!")
+                st.error("💡 Check if your API key is correct and has proper permissions")
+            
+            # Check if it's a model error
+            if 'model' in str(e).lower():
+                st.error(f"🤖 This appears to be a model-related issue!")
+                st.error(f"💡 Model being used: {self.model}")
+                st.error("💡 Check if this model is available in your API endpoint")
+            
+            st.text("📋 Full traceback:")
             st.text(traceback.format_exc())
             return [], "I'm experiencing technical difficulties. Please try browsing the resources below."
 
@@ -209,6 +253,33 @@ Be conversational and helpful, but don't make up details about the resource.
             st.text(traceback.format_exc())
             # Fallback to simple response
             return f"Great! I found **{matched_resource['title']}** which should help with your question. Let me show you the details!"
+
+    def test_connection(self):
+        """Test the LLM connection with a simple request"""
+        st.info("🧪 Testing LLM connection...")
+        client = self._get_client()
+        if not client:
+            st.error("❌ Cannot test - client not available")
+            return False
+        
+        try:
+            st.info("📡 Sending test request...")
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": "Hello, respond with just 'OK'"}],
+                max_tokens=5,
+                temperature=0
+            )
+            
+            test_response = response.choices[0].message.content.strip()
+            st.success(f"✅ Test successful! Response: '{test_response}'")
+            return True
+            
+        except Exception as e:
+            st.error(f"❌ Test failed: {e}")
+            st.error(f"🔍 Error type: {type(e).__name__}")
+            st.text(traceback.format_exc())
+            return False
 
 # Global instance
 llm_service = ResourceLLMService()

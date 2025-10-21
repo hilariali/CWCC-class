@@ -124,21 +124,33 @@ def _extract_safe_keywords(resource):
 
 def _ai_chatbot_response(user_question, safe_resource_index):
     """AI-powered chatbot that uses LLM to match user questions to resources"""
+    st.info("🚀 Starting AI chatbot response...")
+    st.info(f"📝 Question: '{user_question}'")
+    st.info(f"📊 Resource index size: {len(safe_resource_index)}")
+    
     try:
-        st.info(f"🔍 Processing question: {user_question}")
+        st.info("🔧 Calling LLM service...")
         # Use LLM service for intelligent matching
         results, ai_response = llm_service.match_resource(user_question, safe_resource_index)
         
+        st.info(f"📋 LLM service returned: {len(results)} results")
+        st.info(f"💬 AI response: {ai_response[:100]}...")
+        
         if results:
             st.success(f"✅ Found {len(results)} match(es)")
+            for i, result in enumerate(results):
+                st.info(f"  #{i+1}: {result.get('resource_id')} (confidence: {result.get('confidence', 0):.2f})")
         else:
-            st.warning("⚠️ No matches found, using fallback")
+            st.warning("⚠️ No matches found from LLM, using fallback")
             
         return results, ai_response
     except Exception as e:
         st.error(f"❌ AI chatbot error: {e}")
+        st.error(f"🔍 Error type: {type(e).__name__}")
         import traceback
+        st.text("📋 Full traceback:")
         st.text(traceback.format_exc())
+        st.info("🔄 Falling back to simple keyword matching...")
         # Fallback to simple keyword matching if LLM fails
         return _fallback_simple_matching(user_question, safe_resource_index)
 
@@ -285,8 +297,8 @@ def run(
     # *** 1. CHATBOT INTERFACE (Always visible at the top) ***
     st.markdown("### 🤖 AI Resource Assistant")
     
-    # AI status and info
-    col1, col2 = st.columns([3, 1])
+    # AI status and test interface
+    col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
         st.markdown("*Ask me about any resource and I'll help you find the best matches!*")
     with col2:
@@ -302,6 +314,10 @@ def run(
         except:
             st.warning("⚡ Basic Mode")
             st.caption("Keyword matching")
+    with col3:
+        # Test button for debugging
+        if st.button("🧪 Test API", help="Test the LLM API connection"):
+            llm_service.test_connection()
     
     # Create safe resource index for chatbot (no sensitive details)
     safe_index = _get_resource_index_for_chatbot(processed)
