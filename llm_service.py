@@ -53,67 +53,45 @@ class ResourceLLMService:
     
     def create_system_prompt(self, safe_resource_index: List[Dict]) -> str:
         """Create system prompt with safe resource information"""
-        resources_json = json.dumps(safe_resource_index, indent=2)
+        # Create a simple list of resources for the AI
+        resources_text = ""
+        for resource in safe_resource_index:
+            resources_text += f"- ID: {resource['id']}\n"
+            resources_text += f"  Title: {resource['title']}\n"
+            resources_text += f"  Group: {resource['group']}\n"
+            resources_text += f"  Keywords: {', '.join(resource.get('keywords', []))}\n\n"
         
-        return f"""You are a helpful AI assistant for the CWCC Resources Hub. Your job is to help users find the right resources by matching their questions to available resources.
+        return f"""You are a helpful AI assistant for the CWCC Resources Hub. Help users find the right resources.
 
 AVAILABLE RESOURCES:
-{resources_json}
+{resources_text}
 
 INSTRUCTIONS:
-1. Analyze the user's question and find ALL relevant resources (up to 5 results)
-2. Return ONLY a JSON response with this exact format (results MUST be ordered by confidence, highest first):
-{{
-    "results": [
-        {{
-            "resource_id": "exact-resource-id-from-list",
-            "confidence": 0.95,
-            "reasoning": "Brief explanation of why this resource matches",
-            "rank": 1
-        }},
-        {{
-            "resource_id": "another-resource-id-from-list",
-            "confidence": 0.80,
-            "reasoning": "Brief explanation of why this resource matches",
-            "rank": 2
-        }},
-        {{
-            "resource_id": "third-resource-id-from-list",
-            "confidence": 0.65,
-            "reasoning": "Brief explanation of why this resource matches",
-            "rank": 3
-        }}
-    ],
-    "response": "Friendly response mentioning how many matches were found and encouraging user to check them"
-}}
+1. Analyze the user's question and find the most relevant resource(s)
+2. Return your response in this EXACT format:
 
-3. If no good match is found (confidence < 0.4), return:
-{{
-    "results": [],
-    "response": "I couldn't find any specific resources matching your query. Could you try rephrasing your question or browse the resources below?"
-}}
+RESOURCE_IDS: [list the resource IDs that match, separated by commas]
+CONFIDENCE: [your confidence level from 0.0 to 1.0]
+REASONING: [brief explanation of why these resources match]
+RESPONSE: [friendly response to the user]
+
+Example:
+RESOURCE_IDS: venue-booking-form, facility-report-form
+CONFIDENCE: 0.85
+REASONING: User is asking about booking facilities and reporting issues
+RESPONSE: I found resources for venue booking and facility reporting that should help you!
+
+If no good match is found:
+RESOURCE_IDS: 
+CONFIDENCE: 0.0
+REASONING: No suitable resources found
+RESPONSE: I couldn't find specific resources for that. Could you try rephrasing your question?
 
 MATCHING GUIDELINES:
-- Look for keywords in titles, groups, and access information
+- Look for keywords in titles, groups, and keywords
 - Consider synonyms and related terms
-- Prioritize exact matches over partial matches
-- Consider the context and intent of the user's question
-- Return up to 5 results, ranked by confidence (highest first)
-- Only include results with confidence > 0.4
-- Be comprehensive - include all potentially relevant resources
-- Order results by confidence level (highest confidence first)
-
-SECURITY:
-- Never make up resource IDs that don't exist in the list
-- Only use the resource information provided above
-- Don't expose sensitive details beyond what's in the safe index
-
-RESPONSE STYLE:
-- Be friendly and helpful
-- Use natural language
-- Explain why the resource is relevant
-- If multiple resources could work, pick the best one
-"""
+- Only suggest resources that truly match the user's question
+- Be helpful and accurate"""
 
     def match_resource(self, user_question: str, safe_resource_index: List[Dict]) -> Tuple[List[Dict], str]:
         """Use LLM to match user question to resources, returning up to 5 ranked results"""
@@ -149,46 +127,58 @@ RESPONSE STYLE:
             if not ai_response:
                 st.error("❌ Received empty response from API")
                 return [], "I received an empty response. Please try again."
+            
             st.success(f"✅ LLM Response received: {len(ai_response)} characters")
             
             # Log the raw response for debugging
             with st.expander("🔍 Debug: Raw LLM Response", expanded=False):
-                st.code(ai_response, language="json")
+                st.text(ai_response)
             
-            # Parse JSON response
+            # Parse the structured response
             try:
-                result = json.loads(ai_response)
-                results = result.get("results", [])
-                ai_message = result.get("response", "I found some resources that might help!")
+                lines = ai_response.strip().split('\n')
+                resource_ids_line = ""
+                confidence_line = ""
+                reasoning_line = ""
+                response_line = ""
                 
-                # Validate and process results
+                for line in lines:
+                    if line.startswith("RESOURCE_IDS:"):
+                        resource_ids_line = line.replace("RESOURCE_IDS:", "").strip()
+                    elif line.startswith("CONFIDENCE:"):
+                        confidence_line = line.replace("CONFIDENCE:", "").strip()
+                    elif line.startswith("REASONING:"):
+                        reasoning_line = line.replace("REASONING:", "").strip()
+                    elif line.startswith("RESPONSE:"):
+                        response_line = line.replace("RESPONSE:", "").strip()
+                
+                st.info(f"📋 Parsed - IDs: '{resource_ids_line}', Confidence: '{confidence_line}'")
+                
+                # Process resource IDs
                 valid_results = []
                 valid_ids = [r["id"] for r in safe_resource_index]
                 
-                for res in results:
-                    resource_id = res.get("resource_id")
-                    confidence = res.get("confidence", 0.0)
-                    reasoning = res.get("reasoning", "")
-                    rank = res.get("rank", 999)
+                if resource_ids_line and resource_ids_line.strip():
+                    resource_ids = [rid.strip() for rid in resource_ids_line.split(',') if rid.strip()]
+                    confidence = float(confidence_line) if confidence_line else 0.5
                     
-                    if resource_id and resource_id in valid_ids:
-                        valid_results.append({
-                            "resource_id": resource_id,
-                            "confidence": confidence,
-                            "reasoning": reasoning,
-                            "rank": rank
-                        })
-                        st.info(f"📊 Match #{rank}: {resource_id} (confidence: {confidence:.2f})")
-                    elif resource_id:
-                        st.warning(f"⚠️ Invalid resource ID returned: {resource_id}")
+                    for i, resource_id in enumerate(resource_ids):
+                        if resource_id in valid_ids:
+                            valid_results.append({
+                                "resource_id": resource_id,
+                                "confidence": confidence - (i * 0.1),  # Slightly lower confidence for subsequent results
+                                "reasoning": reasoning_line,
+                                "rank": i + 1
+                            })
+                            st.info(f"📊 Match #{i+1}: {resource_id} (confidence: {confidence - (i * 0.1):.2f})")
+                        else:
+                            st.warning(f"⚠️ Invalid resource ID returned: {resource_id}")
                 
-                # Sort by confidence (higher confidence first), then by rank
-                valid_results.sort(key=lambda x: (-x["confidence"], x["rank"]))
-                
+                ai_message = response_line if response_line else "I found some resources that might help!"
                 return valid_results, ai_message
                 
-            except json.JSONDecodeError as e:
-                st.error(f"❌ JSON parsing failed: {e}")
+            except Exception as e:
+                st.error(f"❌ Response parsing failed: {e}")
                 st.error(f"Raw response: {ai_response}")
                 return [], "I'm having trouble processing your request. Please try rephrasing your question or browse the resources below."
         
