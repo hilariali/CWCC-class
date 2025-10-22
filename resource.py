@@ -265,27 +265,62 @@ def _slugify(text: str) -> str:
     s = re.sub(r"\s+", "-", s).strip("-")
     return s
 
+def _sanitize_text_for_ai(text):
+    """Remove URLs, passwords, and sensitive information from text for AI processing"""
+    if not text:
+        return ""
+    
+    import re
+    
+    # Remove URLs (http, https, www, etc.)
+    text = re.sub(r'https?://[^\s]+', '[URL]', text)
+    text = re.sub(r'www\.[^\s]+', '[URL]', text)
+    text = re.sub(r'[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}[^\s]*', '[URL]', text)
+    
+    # Remove email addresses
+    text = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[EMAIL]', text)
+    
+    # Remove passwords (look for "Password:" or "Pass:" patterns)
+    text = re.sub(r'[Pp]assword[:\s]*[^\s\n]+', 'Password: [HIDDEN]', text)
+    text = re.sub(r'[Pp]ass[:\s]*[^\s\n]+', 'Password: [HIDDEN]', text)
+    
+    # Remove phone numbers and extensions
+    text = re.sub(r'\b\d{3,4}[-.\s]?\d{3,4}[-.\s]?\d{3,4}\b', '[PHONE]', text)
+    text = re.sub(r'\bext\.?\s*\d+', '[EXT]', text)
+    
+    # Clean up multiple spaces and normalize
+    text = re.sub(r'\s+', ' ', text).strip()
+    
+    return text
+
 def _get_resource_index_for_chatbot(resources):
-    """Create a safe index for chatbot - includes placeholder text for better matching"""
+    """Create a safe index for chatbot - excludes URLs and sensitive information"""
     safe_index = []
     for resource in resources:
+        # Create safe placeholder text without URLs or sensitive info
+        safe_placeholder = _sanitize_text_for_ai(resource.get("placeholder_text", ""))
+        
         safe_resource = {
             "id": resource.get("id", ""),
             "title": resource.get("title", ""),
             "group": resource.get("group", ""),
-            "placeholder_text": resource.get("placeholder_text", ""),  # Include for better matching
-            # Extract keywords from all available safe text
+            "description": resource.get("description", ""),  # Include description for better matching
+            "placeholder_text": safe_placeholder,  # Sanitized version without URLs
+            # Extract keywords from safe text only
             "keywords": _extract_safe_keywords(resource)
         }
         safe_index.append(safe_resource)
     return safe_index
 
 def _extract_safe_keywords(resource):
-    """Extract keywords from resource for matching, including placeholder text"""
+    """Extract keywords from resource for matching, using sanitized text only"""
     keywords = []
     title = resource.get("title", "").lower()
     group = resource.get("group", "").lower()
-    placeholder = resource.get("placeholder_text", "").lower()
+    description = resource.get("description", "").lower()
+    
+    # Sanitize placeholder text before extracting keywords
+    safe_placeholder = _sanitize_text_for_ai(resource.get("placeholder_text", "")).lower()
     
     # Add basic keywords from title
     title_words = re.findall(r'\b\w+\b', title)
@@ -295,11 +330,16 @@ def _extract_safe_keywords(resource):
     group_words = re.findall(r'\b\w+\b', group)
     keywords.extend([word for word in group_words if len(word) > 2])
     
-    # Add keywords from placeholder text (access information)
-    placeholder_words = re.findall(r'\b\w+\b', placeholder)
-    # Filter out very common words and keep meaningful ones
+    # Add description keywords
+    description_words = re.findall(r'\b\w+\b', description)
+    keywords.extend([word for word in description_words if len(word) > 2])
+    
+    # Add keywords from SANITIZED placeholder text (no URLs/passwords)
+    placeholder_words = re.findall(r'\b\w+\b', safe_placeholder)
+    # Filter out very common words, placeholders, and keep meaningful ones
     meaningful_words = [word for word in placeholder_words if len(word) > 3 and word not in [
-        'please', 'contact', 'available', 'through', 'system', 'information', 'will', 'with'
+        'please', 'contact', 'available', 'through', 'system', 'information', 'will', 'with',
+        'url', 'email', 'hidden', 'phone', 'ext'  # Exclude sanitization placeholders
     ]]
     keywords.extend(meaningful_words)
     
