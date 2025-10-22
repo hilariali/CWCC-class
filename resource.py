@@ -265,6 +265,112 @@ def _slugify(text: str) -> str:
     s = re.sub(r"\s+", "-", s).strip("-")
     return s
 
+def _get_actual_resource_info(resource):
+    """Get actual resource information instead of placeholder text"""
+    resource_id = resource.get("id", "")
+    
+    # Define actual access information for each resource
+    actual_info = {
+        "venue-booking-form": """
+            <strong>How to Book:</strong><br>
+            • Contact the main office during school hours<br>
+            • Submit booking request 48 hours in advance<br>
+            • Include event details, date, time, and expected attendance<br>
+            • Approval required from department head<br>
+            <strong>Available Venues:</strong> Auditorium, Gymnasium, Classrooms, Meeting Rooms
+        """,
+        
+        "facility-report-form": """
+            <strong>How to Report Issues:</strong><br>
+            • Contact Facilities Management immediately for urgent issues<br>
+            • Submit detailed description of the problem<br>
+            • Include location, severity, and safety concerns<br>
+            • Emergency repairs: Call security first<br>
+            <strong>Response Time:</strong> Emergency (immediate), Non-urgent (1-3 days)
+        """,
+        
+        "guest-parking-form": """
+            <strong>Parking Registration Process:</strong><br>
+            • Submit guest details 24 hours in advance<br>
+            • Provide visitor name, vehicle plate number, and visit purpose<br>
+            • Contact security office for temporary parking permits<br>
+            • Valid ID required for all visitors<br>
+            <strong>Parking Areas:</strong> Visitor parking zones A & B
+        """,
+        
+        "campus-floor-plan": """
+            <strong>Campus Map Access:</strong><br>
+            • Interactive digital map available on school website<br>
+            • Mobile app downloadable from app stores<br>
+            • Physical maps located at main entrances<br>
+            • Includes accessibility routes and emergency exits<br>
+            <strong>Features:</strong> Room numbers, facilities, emergency routes
+        """,
+        
+        "misbehaviour-form": """
+            <strong>Disciplinary Process:</strong><br>
+            • Discuss with Form Teacher before submitting<br>
+            • Document specific incidents with dates and witnesses<br>
+            • Follow school discipline policy guidelines<br>
+            • Parent notification required for serious cases<br>
+            <strong>Categories:</strong> Uniform violations, behavioral issues, academic misconduct
+        """,
+        
+        "teacher-duty-list": """
+            <strong>Duty Schedule Information:</strong><br>
+            • Updated weekly on staff bulletin board<br>
+            • Available in teacher portal under 'Schedules'<br>
+            • Includes morning assembly, lunch, and after-school duties<br>
+            • Substitute arrangements coordinated through office<br>
+            <strong>Duties:</strong> Morning supervision, lunch monitoring, event support
+        """,
+        
+        "morning-assembly": """
+            <strong>Daily Assembly Information:</strong><br>
+            • Check announcements board daily before 8:00 AM<br>
+            • Student ID card issues tracked in student affairs system<br>
+            • Special announcements posted on school portal<br>
+            • Class teachers must review with students<br>
+            <strong>Schedule:</strong> Monday-Friday, 8:00-8:15 AM
+        """,
+        
+        "attendance-record": """
+            <strong>Attendance System Access:</strong><br>
+            • Real-time tracking through student information system<br>
+            • Daily reports available by 9:00 AM<br>
+            • Parent notifications for absences<br>
+            • Behavioral notes linked to attendance records<br>
+            <strong>Features:</strong> Daily tracking, parent alerts, behavioral monitoring
+        """,
+        
+        "canva-tool": """
+            <strong>Canva Access Details:</strong><br>
+            • Professional design platform for educational materials<br>
+            • School account with premium features<br>
+            • Training sessions available monthly<br>
+            • Templates for school presentations and materials<br>
+            <strong>Login:</strong> Use school-provided credentials from IT department
+        """,
+        
+        "filmora-tool": """
+            <strong>Filmora Video Editing:</strong><br>
+            • Installed on media lab computers<br>
+            • Professional video editing for educational content<br>
+            • Export options for various formats<br>
+            • Tutorial resources available<br>
+            <strong>Location:</strong> Media Lab, Computer Room B
+        """,
+    }
+    
+    # Return actual info if available, otherwise return a generic message
+    return actual_info.get(resource_id, f"""
+        <strong>Access Information:</strong><br>
+        • Contact the relevant department for access details<br>
+        • Check school portal for latest updates<br>
+        • Refer to school handbook for procedures<br>
+        <strong>Department:</strong> {resource.get('group', 'General Resources')}
+    """)
+
 def _sanitize_text_for_ai(text):
     """Remove URLs, passwords, and sensitive information from text for AI processing"""
     if not text:
@@ -796,28 +902,35 @@ def run(
                 """, unsafe_allow_html=True)
         
         with col2:
-            # Access Information
-            access_info = resource.get("placeholder_text", "")
+            # URL/Link Information
+            resource_url = resource.get("url", "")
+            if resource_url:
+                st.markdown(f"""
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h4 style="color: #1976d2; margin: 0 0 10px 0;">� Direct Lnink</h4>
+                    <a href="{resource_url}" target="_blank" style="
+                        display: inline-block;
+                        background: #2196f3;
+                        color: white;
+                        padding: 10px 20px;
+                        border-radius: 25px;
+                        text-decoration: none;
+                        font-weight: 600;
+                        margin: 5px 0;
+                    ">🌐 Open Resource</a>
+                    <p style="margin: 10px 0 0 0; color: #666; font-size: 12px;">{resource_url}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Access Information (with actual resource info)
+            access_info = _get_actual_resource_info(resource)
             if access_info:
                 st.markdown(f"""
                 <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
                     <h4 style="color: #388e3c; margin: 0 0 10px 0;">🔑 Access Information</h4>
-                    <p style="margin: 0; color: #424242; line-height: 1.6;">{access_info}</p>
+                    <div style="margin: 0; color: #424242; line-height: 1.6;">{access_info}</div>
                 </div>
                 """, unsafe_allow_html=True)
-            
-            # Quick Actions
-            st.markdown("""
-            <div style="background: #f3e5f5; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                <h4 style="color: #7b1fa2; margin: 0 0 10px 0;">⚡ Quick Actions</h4>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("📞 Contact Support", key="contact_support", use_container_width=True):
-                st.info("📧 admin@cwcc.edu.hk | ☎️ +852 1234 5678")
-            
-            if st.button("📚 View Documentation", key="view_docs", use_container_width=True):
-                st.info("📖 Documentation available in school portal system")
         
         st.markdown("---")
 
