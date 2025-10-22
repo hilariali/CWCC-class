@@ -25,7 +25,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "description": "For booking school venues (TKN/Tiana).",
         "placeholder_text": "Please contact the office to access the venue booking form.",
         "group": "School Innovation Development",
-        # "url": "https://your-venue-booking-url.com",  # Add URL here if available
+        "url": "https://forms.gle/N8SAHGRRBibBjJy78",  # Add URL here if available
     },
     
     {
@@ -34,7 +34,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "description": "Report campus facility issues (Anson/Yan).",
         "placeholder_text": "Please contact the facility management to report issues.",
         "group": "School Innovation Development",
-        # "url": "https://your-facility-report-url.com",  # Add URL here if available
+        "url": "https://forms.gle/N8SAHGRRBibBjJy78",  # Add URL here if available
     },
     
     {
@@ -43,7 +43,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "description": "Register guest vehicles (Tiana/Yan).",
         "placeholder_text": "Please contact security to register guest vehicles.",
         "group": "School Innovation Development",
-        # "url": "https://your-parking-form-url.com",  # Add URL here if available
+        "url": "https://forms.gle/N8SAHGRRBibBjJy78",  # Add URL here if available
     },
     
     {
@@ -52,7 +52,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "description": "Google Sheet containing the campus layout.",
         "placeholder_text": "Campus floor plan will be available through the directory system.",
         "group": "School Innovation Development",
-        # "url": "https://docs.google.com/spreadsheets/your-floor-plan",  # Add URL here if available
+        "url": "https://forms.gle/N8SAHGRRBibBjJy78",  # Add URL here if available
     },
     
     {
@@ -61,7 +61,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "description": "Staff seating arrangements.",
         "placeholder_text": "Staff seating arrangements will be available through the directory system.",
         "group": "School Innovation Development",
-        # "url": "https://your-seating-plan-url.com",  # Add URL here if available
+        "url": "https://forms.gle/N8SAHGRRBibBjJy78",  # Add URL here if available
     },
     
     {
@@ -70,7 +70,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "description": "Classroom seating charts.",
         "placeholder_text": "Classroom seating charts will be available through the directory system.",
         "group": "School Innovation Development",
-        # "url": "https://your-classroom-chart-url.com",  # Add URL here if available
+        "url": "https://forms.gle/N8SAHGRRBibBjJy78",  # Add URL here if available
     },
 
     # ========================================
@@ -83,7 +83,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "placeholder_text": "Please contact student affairs to access the misbehaviour form.",
         "page_function": "misbehaviour_form",
         "group": "Student Innovation Development",
-        # "url": "https://your-misbehaviour-form-url.com",  # Add URL here if available
+        "url": "https://forms.gle/TMaRvDsAM8K8S2B5A",  # Add URL here if available
     },
     
     {
@@ -93,7 +93,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "placeholder_text": "Teacher duty schedules will be available through the directory system.",
         "page_function": "teacher_duty",
         "group": "Student Innovation Development",
-        # "url": "https://your-duty-schedule-url.com",  # Add URL here if available
+        "url": "https://drive.google.com/file/d/1NnOkVuPNRY95QyVZvs7h-pG1YIBfplVR/view?usp=drive_link",  # Add URL here if available
     },
     
     {
@@ -123,7 +123,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "placeholder_text": "Class committee information will be available through the directory system.",
         "page_function": "class_committee",
         "group": "Student Innovation Development",
-        # "url": "https://your-committee-list-url.com",  # Add URL here if available
+        "url": "https://docs.google.com/spreadsheets/d/1TCgRVvk1J55bzxcqLHaMvAhnBB8BKOo405MOFJTQibI/edit?gid=1506328782#gid=1506328782",  # Add URL here if available
     },
     
     {
@@ -907,7 +907,7 @@ def run(
             if resource_url:
                 st.markdown(f"""
                 <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                    <h4 style="color: #1976d2; margin: 0 0 10px 0;">🔗 Direct Link</h4>
+                    <h4 style="color: #1976d2; margin: 0 0 10px 0;">� Direct Lnink</h4>
                     <a href="{resource_url}" target="_blank" style="
                         display: inline-block;
                         background: #2196f3;
@@ -917,18 +917,16 @@ def run(
                         text-decoration: none;
                         font-weight: 600;
                         margin: 5px 0;
-                    ">🌐 Open Resource</a>
+                    ">→ Open Resource</a>
                     <p style="margin: 10px 0 0 0; color: #666; font-size: 12px;">{resource_url}</p>
                 </div>
                 """, unsafe_allow_html=True)
-            
-            # Access Information (with actual resource info)
-            access_info = _get_actual_resource_info(resource)
-            if access_info:
+            else:
+                # Show simple message when no URL is available
                 st.markdown(f"""
-                <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                    <h4 style="color: #388e3c; margin: 0 0 10px 0;">🔑 Access Information</h4>
-                    <div style="margin: 0; color: #424242; line-height: 1.6;">{access_info}</div>
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h4 style="color: #666; margin: 0 0 10px 0;">📋 Resource Access</h4>
+                    <p style="margin: 0; color: #424242;">Contact the {resource.get('group', 'relevant department')} for access to this resource.</p>
                 </div>
                 """, unsafe_allow_html=True)
         
