@@ -34,7 +34,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "description": "Report campus facility issues (Anson/Yan).",
         "placeholder_text": "Please contact the facility management to report issues.",
         "group": "School Innovation Development",
-        "url": "https://forms.gle/N8SAHGRRBibBjJy78",  # Add URL here if available
+        "url": "https://docs.google.com/forms/d/e/1FAIpQLSdYNSS8qdXDmffqHV3H7ak4VGJkdj_E3QQLJSK3HARdQSfZRA/viewform?usp=send_form",  # Add URL here if available
     },
     
     {
@@ -43,7 +43,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "description": "Register guest vehicles (Tiana/Yan).",
         "placeholder_text": "Please contact security to register guest vehicles.",
         "group": "School Innovation Development",
-        "url": "https://forms.gle/N8SAHGRRBibBjJy78",  # Add URL here if available
+        "url": "https://forms.gle/DRc6PVSbjsq2bHGx6",  # Add URL here if available
     },
     
     {
@@ -52,7 +52,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "description": "Google Sheet containing the campus layout.",
         "placeholder_text": "Campus floor plan will be available through the directory system.",
         "group": "School Innovation Development",
-        "url": "https://forms.gle/N8SAHGRRBibBjJy78",  # Add URL here if available
+        "url": "https://docs.google.com/spreadsheets/d/1XNOQR8vhxlXj2zpVwNtSaZ_ntq10yDI37FXkwD4O8As/edit?usp=sharing",  # Add URL here if available
     },
     
     {
@@ -61,7 +61,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "description": "Staff seating arrangements.",
         "placeholder_text": "Staff seating arrangements will be available through the directory system.",
         "group": "School Innovation Development",
-        "url": "https://forms.gle/N8SAHGRRBibBjJy78",  # Add URL here if available
+        "url": "https://docs.google.com/spreadsheets/d/1hnBIBlmQqBjQC8qUqX_LCXhuk9LP42mvMRNCbzaSJ8g/edit?usp=sharing",  # Add URL here if available
     },
     
     {
@@ -70,7 +70,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "description": "Classroom seating charts.",
         "placeholder_text": "Classroom seating charts will be available through the directory system.",
         "group": "School Innovation Development",
-        "url": "https://forms.gle/N8SAHGRRBibBjJy78",  # Add URL here if available
+        "url": "https://docs.google.com/spreadsheets/d/1DJbamFd5gNmEqBe-zlWODBoqdU_lCPXdA_3Ymrw58Ro/edit?usp=sharing",  # Add URL here if available
     },
 
     # ========================================
