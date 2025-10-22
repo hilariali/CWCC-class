@@ -103,7 +103,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "placeholder_text": "Morning assembly announcements will be available through the directory system.",
         "page_function": "morning_assembly",
         "group": "Student Innovation Development",
-        # "url": "https://your-morning-assembly-url.com",  # Add URL here if available
+        "url": "https://docs.google.com/spreadsheets/d/193Hhysj5NhMEeSqJsOXN7mfXX_8AxZO_4J0I31Q-wrI/edit#gid=684919084",  # Add URL here if available
     },
     
     {
@@ -113,7 +113,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "placeholder_text": "Attendance and behavioural records will be available through the directory system.",
         "page_function": "attendance_record",
         "group": "Student Innovation Development",
-        # "url": "https://your-attendance-system-url.com",  # Add URL here if available
+        "url": "https://docs.google.com/document/d/1w-7vyZ2vfuEjRvYvbhRd7v-CSHGZxFSmaukaJhf_XZc/edit?tab=t.0",  # Add URL here if available
     },
     
     {
@@ -133,7 +133,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "placeholder_text": "Please contact your form teacher to access the credit/warning form.",
         "page_function": "credit_warning",
         "group": "Student Innovation Development",
-        # "url": "https://your-credit-warning-form-url.com",  # Add URL here if available
+        "url": "https://forms.gle/VDPiL1CFQLYmdSff7",  # Add URL here if available
     },
     
     {
@@ -143,7 +143,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "placeholder_text": "Please contact student counseling services for referral forms.",
         "page_function": "referral_form",
         "group": "Student Innovation Development",
-        # "url": "https://your-referral-form-url.com",  # Add URL here if available
+        "url": "https://forms.gle/XM7WQAyuSXmQhPFn6",  # Add URL here if available
     },
     
     {
@@ -153,7 +153,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "placeholder_text": "Class building materials will be available through the directory system.",
         "page_function": "class_materials",
         "group": "Student Innovation Development",
-        # "url": "https://your-materials-inventory-url.com",  # Add URL here if available
+        "url": "https://drive.google.com/drive/folders/1QQxMRJ2O3EtW_TAgKvI3l1JQYsaerJow?usp=drive_link",  # Add URL here if available
     },
     
     {
@@ -163,7 +163,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "placeholder_text": "Guidance and Discipline handbook will be available through the directory system.",
         "page_function": "gd_handbook",
         "group": "Student Innovation Development",
-        # "url": "https://your-handbook-url.com",  # Add URL here if available
+        "url": "https://docs.google.com/document/d/1mgayREPsgpRqJsC3eHodWjn-DVDSOPhxjkA1d3TIGWE/edit?usp=drive_link",  # Add URL here if available
     },
     
     {
@@ -193,7 +193,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "placeholder_text": "Ramadan schedule information will be available through the directory system.",
         "page_function": "ramadan_list",
         "group": "Student Innovation Development",
-        # "url": "https://your-ramadan-schedule-url.com",  # Add URL here if available
+        #"url": "https://your-ramadan-schedule-url.com",  # Add URL here if available
     },
     
     {
@@ -203,7 +203,7 @@ RESOURCES: List[Dict[str, Optional[str]]] = [
         "placeholder_text": "Weekly assembly information will be available through the directory system.",
         "page_function": "weekly_assembly",
         "group": "Student Innovation Development",
-        # "url": "https://your-weekly-assembly-url.com",  # Add URL here if available
+        "url": "https://docs.google.com/spreadsheets/d/1NDaW7YXF_vDj05Os0AWLSK8vdg63-ptYE6hWl2sf4KQ/edit?usp=sharing",  # Add URL here if available
     },
     
     {
