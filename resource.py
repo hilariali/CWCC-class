@@ -907,7 +907,7 @@ def run(
             if resource_url:
                 st.markdown(f"""
                 <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                    <h4 style="color: #1976d2; margin: 0 0 10px 0;">� Direct Lnink</h4>
+                    <h4 style="color: #1976d2; margin: 0 0 10px 0;">🔗 Direct Link</h4>
                     <a href="{resource_url}" target="_blank" style="
                         display: inline-block;
                         background: #2196f3;
