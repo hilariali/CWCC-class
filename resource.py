@@ -626,7 +626,6 @@ def _add_dummy_info(resource):
 def run(
     resources: Optional[List[Dict[str, Optional[str]]]] = None,
     app_base_url: Optional[str] = None,
-    show_toc: bool = True,
     show_title: bool = True,
     title_text: str = "Resources Hub",
     subtitle_text: str = "Click on any resource title to view detailed information"
@@ -911,20 +910,7 @@ def run(
         </div>
         """, unsafe_allow_html=True)
 
-    # *** 5. SIDEBAR ***
-    if show_toc:
-        st.sidebar.header("📚 Resource Categories")
-        by_group = {}
-        for r in processed:
-            grp = r.get("group", "Ungrouped")
-            by_group.setdefault(grp, []).append(r)
-        
-        for group, items in by_group.items():
-            with st.sidebar.expander(f"🏢 {group}", expanded=True):
-                for r in items:
-                    if st.sidebar.button(r['title'], key=f"sidebar_{r['anchor']}", use_container_width=True, help="Click to view details at the top"):
-                        st.session_state.selected_resource = r
-                        st.rerun()
+
 
     # *** 6. RESOURCE LIST ***
     st.markdown("### 📋 Available Resources")
@@ -978,7 +964,6 @@ if __name__ == "__main__":
     run(
         resources=None,  # use built-in data above
         app_base_url=None,  # use APP_BASE_URL secret (or default "")
-        show_toc=True,
         show_title=True,
         title_text="CWCC Resources Hub",
         subtitle_text="Click on any resource title to view detailed information"
