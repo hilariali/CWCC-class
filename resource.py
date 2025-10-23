@@ -479,21 +479,6 @@ def _extract_safe_keywords(resource):
     
     return list(set(keywords))  # Remove duplicates
 
-def _handle_suggestion(question, safe_index, processed):
-    """Helper function to handle suggestion button clicks"""
-    st.session_state.chat_messages.append({"role": "user", "content": question})
-    results, bot_response = _ai_chatbot_response(question, safe_index)
-    st.session_state.chat_messages.append({"role": "assistant", "content": bot_response})
-    if results:
-        st.session_state.chat_results = results
-        top_result_id = results[0]["resource_id"]
-        for resource in processed:
-            if resource.get("id") == top_result_id:
-                st.session_state.selected_resource = resource
-                break
-    else:
-        st.session_state.chat_results = []
-    st.rerun()
 
 def _get_suggested_questions():
     """Return a list of suggested questions when no results are found"""
@@ -724,27 +709,6 @@ def run(
             st.session_state.chat_results = []
         
         st.rerun()
-    
-    # Clear chat button
-    if st.button("🗑️ Clear Chat", key="clear_chat"):
-        st.session_state.chat_messages = []
-        st.session_state.chat_results = []
-        st.rerun()
-    
-    # Quick suggestion buttons
-    st.markdown("**Quick suggestions:**")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("🏢 Venue booking", key="suggest1"):
-            _handle_suggestion("How do I book a venue?", safe_index, processed)
-    
-    with col2:
-        if st.button("📝 Student discipline", key="suggest2"):
-            _handle_suggestion("Student discipline form", safe_index, processed)
-    
-    with col3:
-        if st.button("🎨 Design tools", key="suggest3"):
-            _handle_suggestion("Design and graphics tools", safe_index, processed)
     
     st.markdown("---")
 
