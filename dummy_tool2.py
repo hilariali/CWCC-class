@@ -125,7 +125,7 @@ def run():
                 full_history = [{"role": "system", "content": system_prompt}] + st.session_state.chat_history
 
                 response = client.chat.completions.create(
-                    model=selected_model,
+                    model="meta-llama/Llama-3.3-70B-Instruct",
                     messages=full_history,
                 )
                 reply = response.choices[0].message.content

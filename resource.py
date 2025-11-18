@@ -957,14 +957,3 @@ def run(
                     <small style="color: #6c757d; font-style: italic;">{preview_text}</small>
                 </div>
                 """, unsafe_allow_html=True)
-
-# Standalone execution
-if __name__ == "__main__":
-    st.set_page_config(page_title="Resources Hub", page_icon="🔗", layout="wide")
-    run(
-        resources=None,  # use built-in data above
-        app_base_url=None,  # use APP_BASE_URL secret (or default "")
-        show_title=True,
-        title_text="CWCC Resources Hub",
-        subtitle_text="Click on any resource title to view detailed information"
-    )

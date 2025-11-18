@@ -26,13 +26,13 @@ You are an image generator. The user provides a prompt plus optional style hints
 - Infer the most appropriate model name based on the prompt and style.
 
 ## Default params:
-- prompt (required): Text description (up to 50 words).
-- style (optional): Desired style, e.g., '3D', 'realism', 'outline', 'black and white'.
-- image_model (optional): 'flux', 'flux-realism', 'any-dark', 'flux-anime', 'flux-3d', 'turbo'.
-- chat_model (optional): 'DeepSeek-R1-Distill-Qwen-32B', 'DeepSeek-V3-1', 'gpt-oss-120b', 'Meta-Llama-3-1-8B-Instruct-FP8', 'Meta-Llama-3-3-70B-Instruct', 'Meta-Llama-4-Maverick-17B-128E-Instruct-FP8', 'Qwen3-235B-A22B-Instruct-2507-FP8'.
-- seed (optional): integer for reproducibility.
-- width/height (optional): Pixel dimensions, default 1024×1024.
-- nologo (optional): true to disable the logo.
+ - prompt (required): Text description (up to 50 words).
+ - style (optional): Desired style, e.g., '3D', 'realism', 'outline', 'black and white'.
+ - image_model (optional): 'flux', 'flux-realism', 'any-dark', 'flux-anime', 'flux-3d', 'turbo'.
+ - chat_model (optional): 'meta-llama/Llama-3.3-70B-Instruct', 'DeepSeek-V3-1', 'gpt-oss-120b', 'Meta-Llama-3-1-8B-Instruct-FP8', 'Meta-Llama-4-Maverick-17B-128E-Instruct-FP8', 'Qwen3-235B-A22B-Instruct-2507-FP8'.
+ - seed (optional): integer for reproducibility.
+ - width/height (optional): Pixel dimensions, default 1024×1024.
+ - nologo (optional): true to disable the logo.
 
 ## Additional instructions:
 - Return an embedded markdown image tag with the generated URL, followed by the prompt in italic below.
@@ -58,7 +58,7 @@ def run():
 
     with st.expander("Advanced Settings (optional)"):
         image_model = st.radio("Image Model:", ["flux","flux-realism","any-dark","flux-anime","flux-3d","turbo"], index=0)
-        chat_model = st.selectbox("Chat Model:", ["DeepSeek-R1-Distill-Qwen-32B","DeepSeek-V3-1","gpt-oss-120b","Meta-Llama-3-1-8B-Instruct-FP8","Meta-Llama-3-3-70B-Instruct","Meta-Llama-4-Maverick-17B-128E-Instruct-FP8","Qwen3-235B-A22B-Instruct-2507-FP8"], index=0)
+    chat_model = st.selectbox("Chat Model:", ["meta-llama/Llama-3.3-70B-Instruct","DeepSeek-V3-1","gpt-oss-120b","Meta-Llama-3-1-8B-Instruct-FP8","Meta-Llama-4-Maverick-17B-128E-Instruct-FP8","Qwen3-235B-A22B-Instruct-2507-FP8"], index=0)
         aspect = st.radio("Size:", ["Square (1024×1024)","Portrait (768×1024)","Landscape (1024×768)"], index=0)
         size_map = {
             "Square (1024×1024)": (1024, 1024),
@@ -85,7 +85,7 @@ def run():
         with st.spinner("Generating image..."):
             try:
                 response = client.chat.completions.create(
-                    model=chat_model,
+                    model="meta-llama/Llama-3.3-70B-Instruct",
                     messages=[
                         {"role": "system", "content": PREPROMPT},
                         {"role": "user", "content": str(params)}
@@ -116,7 +116,7 @@ def run():
             with st.spinner("Updating image..."):
                 try:
                     response = client.chat.completions.create(
-                        model=chat_model,
+                        model="meta-llama/Llama-3.3-70B-Instruct",
                         messages=st.session_state.messages
                     )
                     reply = response.choices[0].message.content

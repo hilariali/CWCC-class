@@ -15,7 +15,7 @@ class ResourceLLMService:
     def __init__(self):
         """Initialize the LLM service"""
         self.client = None
-        self.model = "DeepSeek-R1-Distill-Qwen-32B"  # Default model
+        self.model = "meta-llama/Llama-3.3-70B-Instruct"  # Default model
     
     def _get_client(self):
         """Lazy initialization of OpenAI client"""
@@ -83,7 +83,7 @@ MATCHING GUIDELINES:
             
             # Use the exact same format as working tools (dummy_tool1, dummy_tool2, youtube_quiz)
             response = client.chat.completions.create(
-                model=self.model,
+                model="meta-llama/Llama-3.3-70B-Instruct",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_question}
