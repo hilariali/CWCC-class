@@ -58,7 +58,7 @@ def run():
 
     with st.expander("Advanced Settings (optional)"):
         image_model = st.radio("Image Model:", ["flux","flux-realism","any-dark","flux-anime","flux-3d","turbo"], index=0)
-    chat_model = st.selectbox("Chat Model:", ["meta-llama/Llama-3.3-70B-Instruct","DeepSeek-V3-1","gpt-oss-120b","Meta-Llama-3-1-8B-Instruct-FP8","Meta-Llama-4-Maverick-17B-128E-Instruct-FP8","Qwen3-235B-A22B-Instruct-2507-FP8"], index=0)
+        chat_model = st.selectbox("Chat Model:", ["meta-llama/Llama-3.3-70B-Instruct","DeepSeek-V3-1","gpt-oss-120b","Meta-Llama-3-1-8B-Instruct-FP8","Meta-Llama-4-Maverick-17B-128E-Instruct-FP8","Qwen3-235B-A22B-Instruct-2507-FP8"], index=0)
         aspect = st.radio("Size:", ["Square (1024×1024)","Portrait (768×1024)","Landscape (1024×768)"], index=0)
         size_map = {
             "Square (1024×1024)": (1024, 1024),
