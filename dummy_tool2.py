@@ -118,7 +118,11 @@ def run():
                     f"{st.session_state.file_context[:MAX_CHAR_LIMIT]}\n\n"
                     f"Now answer based on this information."
                 )
-                full_history = [{"role": "system", "content": system_prompt}] + st.session_state.chat_history
+                api_history = st.session_state.chat_history
+                if api_history and api_history[0]["role"] == "assistant":
+                    api_history = api_history[1:]
+
+                full_history = [{"role": "system", "content": system_prompt}] + api_history
 
                 response = client.chat.completions.create(
                     model=selected_model,

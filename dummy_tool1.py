@@ -60,9 +60,14 @@ def run():
         # Call the API and show a spinner while waiting
         with st.spinner("AI is thinking..."):
             try:
+                # Filter out initial greeting if it starts with an assistant message (strict Jinja template compliance)
+                api_messages = st.session_state.messages
+                if api_messages and api_messages[0]["role"] == "assistant":
+                    api_messages = api_messages[1:]
+
                 response = client.chat.completions.create(
                     model=selected_model,
-                    messages=st.session_state.messages,
+                    messages=api_messages,
                 )
                 assistant_msg = response.choices[0].message.content
             except Exception as e:

@@ -106,7 +106,10 @@ def run():
                 "If the answer is not contained in the text or you are uncertain, say you do not know and suggest verifying."
             )
             context = st.session_state.page_text[:MAX_CONTEXT]
-            messages = [{"role": "system", "content": system_prompt + "\n\n" + context}] + st.session_state.chat_history
+            api_history = st.session_state.chat_history
+            if api_history and api_history[0]["role"] == "assistant":
+                api_history = api_history[1:]
+            messages = [{"role": "system", "content": system_prompt + "\n\n" + context}] + api_history
 
             with st.spinner("Thinking…"):
                 try:
