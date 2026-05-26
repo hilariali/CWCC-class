@@ -8,12 +8,10 @@ def run():
     st.caption("🚀 Chat with an AI assistant powered by your secret API key.")
 
     # ----------------------------------------------------------------------------
-    # 1) Initialize the OpenAI client using secret
+    # 1) Initialize the OpenAI client using helper
     # ----------------------------------------------------------------------------
-    client = openai.OpenAI(
-        api_key=st.secrets["OPENAI_API_KEY"]
-        # If using a custom endpoint, include base_url="https://chatapi.akash.network/api/v1"
-    )
+    from model_utils import get_openai_client
+    client = get_openai_client()
 
     # ----------------------------------------------------------------------------
     # 2) Initialize or retrieve conversation history
@@ -35,17 +33,14 @@ def run():
     # ----------------------------------------------------------------------------
     # 4) Model selection (fixed at top of page)
     # ----------------------------------------------------------------------------
-    model_options = [
-        "meta-llama/Llama-3.3-70B-Instruct"
-        #"DeepSeek-R1-Distill-Qwen-32B",
-        #"DeepSeek-V3-1",
-        #"gpt-oss-120b",
-        #"Meta-Llama-3-1-8B-Instruct-FP8",
-        #"Meta-Llama-3-3-70B-Instruct",
-        #"Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
-        #"Qwen3-235B-A22B-Instruct-2507-FP8",
-    ]
-    selected_model = st.selectbox("Choose a model:", model_options)
+    from model_utils import get_available_models
+    model_options = get_available_models(client)
+
+    if model_options:
+        selected_model = st.selectbox("Choose a model:", model_options)
+    else:
+        st.warning("⚠️ No active models found in LM Studio. Please enter model ID manually:")
+        selected_model = st.text_input("Model ID:", value="meta-llama/Llama-3.3-70B-Instruct")
 
     # ----------------------------------------------------------------------------
     # 5) Display existing conversation using chat bubbles

@@ -10,6 +10,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
 
 client = None
+selected_model = None
 CHUNK_SIZE = 100000
 
 def get_video_id(url: str) -> str:
@@ -176,7 +177,7 @@ def summarize_chunk(text: str, lang: str) -> str:
     prompt = f"Please summarize the following transcript chunk in {lang}:\n\n{text}"
     try:
         resp = client.chat.completions.create(
-            model="DeepSeek-R1-Distill-Qwen-32B",
+            model=selected_model,
             messages=[{"role": "user", "content": prompt}],
         )
         return resp.choices[0].message.content
@@ -200,7 +201,7 @@ def generate_quiz(summary: str, lang: str, grade: str, num_questions: int) -> st
     )
     try:
         resp = client.chat.completions.create(
-            model="DeepSeek-R1-Distill-Qwen-32B",
+            model=selected_model,
             messages=[{"role": "user", "content": prompt}],
         )
         return resp.choices[0].message.content
@@ -216,7 +217,7 @@ def modify_quiz(existing_quiz: str, instructions: str, lang: str) -> str:
     )
     try:
         resp = client.chat.completions.create(
-            model="DeepSeek-R1-Distill-Qwen-32B",
+            model=selected_model,
             messages=[{"role": "user", "content": prompt}],
         )
         return resp.choices[0].message.content
@@ -226,11 +227,10 @@ def modify_quiz(existing_quiz: str, instructions: str, lang: str) -> str:
         return ""
 
 def run():
-    global client
-    client = openai.OpenAI(
-        api_key=st.secrets["OPENAI_API_KEY"],
-        base_url=st.secrets.get("OPENAI_BASE_URL"),
-    )
+    global client, selected_model
+    from model_utils import get_openai_client, get_default_model
+    client = get_openai_client()
+    selected_model = get_default_model(client)
 
     defaults = {
         "last_url": "",

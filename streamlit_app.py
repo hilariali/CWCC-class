@@ -72,6 +72,18 @@ with st.sidebar:
         st.session_state.sidebar_closed = selected != "Home"
         st.rerun()
 
+    # API Settings Section
+    st.markdown("---")
+    st.markdown("### ⚙️ API Settings")
+    default_url = st.secrets.get("OPENAI_BASE_URL", "https://dairy-trio-railway-rebate.trycloudflare.com/v1")
+    default_key = st.secrets.get("OPENAI_API_KEY", "lm-studio")
+    
+    st.text_input("API Base URL:", value=default_url, key="openai_base_url")
+    st.text_input("API Key:", value=default_key, type="password", key="openai_key_input")
+    
+    # Store key in st.session_state.openai_api_key
+    st.session_state.openai_api_key = st.session_state.openai_key_input
+
     # Logout button
     st.markdown("---")
     if st.button("🚪 Logout", use_container_width=True):

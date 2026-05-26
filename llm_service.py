@@ -18,16 +18,13 @@ class ResourceLLMService:
         self.model = "meta-llama/Llama-3.3-70B-Instruct"  # Default model
     
     def _get_client(self):
-        """Lazy initialization of OpenAI client"""
-        if self.client is None:
-            try:
-                # Use the same configuration as other working tools
-                self.client = openai.OpenAI(
-                    api_key=st.secrets["OPENAI_API_KEY"],
-                    base_url=st.secrets.get("OPENAI_BASE_URL"),
-                )
-            except Exception as e:
-                self.client = None
+        """Get or initialize OpenAI client dynamically"""
+        try:
+            from model_utils import get_openai_client, get_default_model
+            self.client = get_openai_client()
+            self.model = get_default_model(self.client)
+        except Exception as e:
+            self.client = None
         return self.client
     
     def create_system_prompt(self, safe_resource_index: List[Dict]) -> str:
@@ -83,7 +80,7 @@ MATCHING GUIDELINES:
             
             # Use the exact same format as working tools (dummy_tool1, dummy_tool2, youtube_quiz)
             response = client.chat.completions.create(
-                model="meta-llama/Llama-3.3-70B-Instruct",
+                model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_question}

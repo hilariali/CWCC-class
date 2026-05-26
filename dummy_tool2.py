@@ -40,10 +40,8 @@ def run():
     st.title("📁 Chat with Your Files")
     st.caption("Upload documents and chat with AI about their contents.")
 
-    client = openai.OpenAI(
-        api_key=st.secrets["OPENAI_API_KEY"],
-        base_url=st.secrets.get("OPENAI_BASE_URL"),
-    )
+    from model_utils import get_openai_client
+    client = get_openai_client()
 
     # Session state for context and chat
     if "file_context" not in st.session_state:
@@ -91,17 +89,14 @@ def run():
             st.text_area("Combined file text (first 5000 characters shown):", value=combined_text[:5000], height=300)
 
     # Model choice
-    model_options = [
-        "meta-llama/Llama-3.3-70B-Instruct"
-        #"DeepSeek-R1-Distill-Qwen-32B",
-        #"DeepSeek-V3-1",
-        #"gpt-oss-120b",
-        #"Meta-Llama-3-1-8B-Instruct-FP8",
-        #"Meta-Llama-3-3-70B-Instruct",
-        #"Meta-Llama-4-Maverick-17B-128E-Instruct-FP8",
-        #"Qwen3-235B-A22B-Instruct-2507-FP8",
-    ]
-    selected_model = st.selectbox("Choose an AI model:", model_options)
+    from model_utils import get_available_models
+    model_options = get_available_models(client)
+
+    if model_options:
+        selected_model = st.selectbox("Choose an AI model:", model_options)
+    else:
+        st.warning("⚠️ No active models found in LM Studio. Please enter model ID manually:")
+        selected_model = st.text_input("AI Model ID:", value="meta-llama/Llama-3.3-70B-Instruct")
 
     st.divider()
 
@@ -126,7 +121,7 @@ def run():
                 full_history = [{"role": "system", "content": system_prompt}] + st.session_state.chat_history
 
                 response = client.chat.completions.create(
-                    model="meta-llama/Llama-3.3-70B-Instruct",
+                    model=selected_model,
                     messages=full_history,
                 )
                 reply = response.choices[0].message.content

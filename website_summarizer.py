@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import traceback
 
 client = None
+selected_model = None
 
 MAX_CONTEXT = 100000
 
@@ -28,7 +29,7 @@ def summarize_chunk(text: str) -> str:
     )
     try:
         resp = client.chat.completions.create(
-            model="DeepSeek-R1-Distill-Qwen-32B",
+            model=selected_model,
             messages=[{"role": "user", "content": prompt}],
         )
         return resp.choices[0].message.content
@@ -46,11 +47,10 @@ def summarize_text(text: str) -> str:
     return summarize_chunk("\n".join(parts))
 
 def run():
-    global client
-    client = openai.OpenAI(
-        api_key=st.secrets["OPENAI_API_KEY"],
-        base_url=st.secrets.get("OPENAI_BASE_URL"),
-    )
+    global client, selected_model
+    from model_utils import get_openai_client, get_default_model
+    client = get_openai_client()
+    selected_model = get_default_model(client)
 
     st.header("\U0001F310 Webpage Summarizer")
     url = st.text_input("Website URL:")
@@ -111,7 +111,7 @@ def run():
             with st.spinner("Thinking…"):
                 try:
                     resp = client.chat.completions.create(
-                        model="DeepSeek-R1-Distill-Qwen-32B",
+                        model=selected_model,
                         messages=messages,
                     )
                     reply = resp.choices[0].message.content

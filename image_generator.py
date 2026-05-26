@@ -58,7 +58,17 @@ def run():
 
     with st.expander("Advanced Settings (optional)"):
         image_model = st.radio("Image Model:", ["flux","flux-realism","any-dark","flux-anime","flux-3d","turbo"], index=0)
-        chat_model = st.selectbox("Chat Model:", ["meta-llama/Llama-3.3-70B-Instruct"], index=0)
+        from model_utils import get_openai_client, get_available_models
+        try:
+            temp_client = get_openai_client()
+            chat_model_options = get_available_models(temp_client)
+        except Exception:
+            chat_model_options = []
+
+        if chat_model_options:
+            chat_model = st.selectbox("Chat Model:", chat_model_options, index=0)
+        else:
+            chat_model = st.text_input("Chat Model:", value="meta-llama/Llama-3.3-70B-Instruct")
         aspect = st.radio("Size:", ["Square (1024×1024)","Portrait (768×1024)","Landscape (1024×768)"], index=0)
         size_map = {
             "Square (1024×1024)": (1024, 1024),
@@ -81,11 +91,12 @@ def run():
             "seed": seed,
             "nologo": nologo
         }
-        client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+        from model_utils import get_openai_client
+        client = get_openai_client()
         with st.spinner("Generating image..."):
             try:
                 response = client.chat.completions.create(
-                    model="meta-llama/Llama-3.3-70B-Instruct",
+                    model=chat_model,
                     messages=[
                         {"role": "system", "content": PREPROMPT},
                         {"role": "user", "content": str(params)}
@@ -112,11 +123,12 @@ def run():
         if followup:
             st.session_state.messages.append({"role": "user", "content": followup})
             st.chat_message("user").write(followup)
-            client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+            from model_utils import get_openai_client
+            client = get_openai_client()
             with st.spinner("Updating image..."):
                 try:
                     response = client.chat.completions.create(
-                        model="meta-llama/Llama-3.3-70B-Instruct",
+                        model=chat_model,
                         messages=st.session_state.messages
                     )
                     reply = response.choices[0].message.content
