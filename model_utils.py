@@ -49,7 +49,12 @@ def get_default_model(client=None, fallback="meta-llama/Llama-3.3-70B-Instruct")
     if "selected_model" in st.session_state and st.session_state.selected_model:
         return st.session_state.selected_model
         
+    secret_model = st.secrets.get("DEFAULT_MODEL")
+    if secret_model:
+        return secret_model
+        
     models = get_available_models(client)
+    models = [m for m in models if "embed" not in m.lower()]
     if models:
         return models[0]
     return fallback

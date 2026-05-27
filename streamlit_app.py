@@ -91,13 +91,20 @@ with st.sidebar:
         try:
             client = get_openai_client()
             models = get_available_models(client)
+            # Filter out embedding models
+            models = [m for m in models if "embed" not in m.lower()]
             if models:
                 st.success("✅ Connection successful!")
                 st.session_state.available_models = models
-                if "selected_model" not in st.session_state or st.session_state.selected_model not in models:
+                
+                # Check if we have a default model in secrets
+                default_model = st.secrets.get("DEFAULT_MODEL")
+                if default_model in models and "selected_model" not in st.session_state:
+                    st.session_state.selected_model = default_model
+                elif "selected_model" not in st.session_state or st.session_state.selected_model not in models:
                     st.session_state.selected_model = models[0]
             else:
-                st.error("❌ Connected, but no models found. Check LM Studio.")
+                st.error("❌ Connected, but no chat models found. Check LM Studio.")
                 st.session_state.available_models = []
         except Exception as e:
             st.error(f"❌ Connection failed: {e}")
@@ -109,6 +116,38 @@ with st.sidebar:
             st.session_state.available_models, 
             key="selected_model"
         )
+        
+        if st.button("Save Settings as Default"):
+            import re
+            import os
+            try:
+                secrets_path = ".streamlit/secrets.toml"
+                if os.path.exists(secrets_path):
+                    with open(secrets_path, "r") as f:
+                        content = f.read()
+                else:
+                    content = ""
+                
+                # Update URL
+                if "OPENAI_BASE_URL" in content:
+                    content = re.sub(r'OPENAI_BASE_URL\s*=\s*".*"', f'OPENAI_BASE_URL = "{st.session_state.openai_base_url}"', content)
+                else:
+                    content += f'\nOPENAI_BASE_URL = "{st.session_state.openai_base_url}"'
+                    
+                # Update Model
+                if "DEFAULT_MODEL" in content:
+                    content = re.sub(r'DEFAULT_MODEL\s*=\s*".*"', f'DEFAULT_MODEL = "{st.session_state.selected_model}"', content)
+                else:
+                    content += f'\nDEFAULT_MODEL = "{st.session_state.selected_model}"'
+                    
+                with open(secrets_path, "w") as f:
+                    f.write(content)
+                st.success("✅ Saved successfully! Restarting to apply...")
+                import time
+                time.sleep(1)
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ Failed to save: {e}")
 
     # Logout button
     st.markdown("---")
