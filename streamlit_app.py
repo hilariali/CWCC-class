@@ -93,16 +93,34 @@ with st.sidebar:
             models = get_available_models(client)
             # Filter out embedding models
             models = [m for m in models if "embed" not in m.lower()]
+            
             if models:
-                st.success("✅ Connection successful!")
-                st.session_state.available_models = models
+                with st.spinner("Checking which models are actually loaded..."):
+                    import requests
+                    loaded_models = []
+                    headers = {"Authorization": f"Bearer {st.session_state.openai_api_key}"}
+                    for m in models:
+                        try:
+                            payload = {"model": m, "messages": [{"role": "user", "content": "1"}], "max_tokens": 1}
+                            r = requests.post(f"{st.session_state.openai_base_url}/chat/completions", headers=headers, json=payload, timeout=2.5)
+                            if r.status_code == 200:
+                                loaded_models.append(m)
+                        except Exception:
+                            pass
                 
-                # Check if we have a default model in secrets
-                default_model = st.secrets.get("DEFAULT_MODEL")
-                if default_model in models and "selected_model" not in st.session_state:
-                    st.session_state.selected_model = default_model
-                elif "selected_model" not in st.session_state or st.session_state.selected_model not in models:
-                    st.session_state.selected_model = models[0]
+                if loaded_models:
+                    st.success("✅ Connection successful! Found loaded models.")
+                    st.session_state.available_models = loaded_models
+                    
+                    # Check if we have a default model in secrets
+                    default_model = st.secrets.get("DEFAULT_MODEL")
+                    if default_model in loaded_models and "selected_model" not in st.session_state:
+                        st.session_state.selected_model = default_model
+                    elif "selected_model" not in st.session_state or st.session_state.selected_model not in loaded_models:
+                        st.session_state.selected_model = loaded_models[0]
+                else:
+                    st.error("❌ Connected, but no models are currently loaded in memory. Please load one in LM Studio.")
+                    st.session_state.available_models = []
             else:
                 st.error("❌ Connected, but no chat models found. Check LM Studio.")
                 st.session_state.available_models = []
