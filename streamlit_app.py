@@ -78,11 +78,37 @@ with st.sidebar:
     default_url = st.secrets.get("OPENAI_BASE_URL", "https://dairy-trio-railway-rebate.trycloudflare.com/v1")
     default_key = st.secrets.get("OPENAI_API_KEY", "lm-studio")
     
-    st.text_input("API Base URL:", value=default_url, key="openai_base_url")
-    st.text_input("API Key:", value=default_key, type="password", key="openai_key_input")
+    # Use different keys for the text inputs so we can map them to the unified session_state keys
+    base_url = st.text_input("API Base URL:", value=default_url, key="openai_base_url_input")
+    api_key = st.text_input("API Key:", value=default_key, type="password", key="openai_key_input")
     
-    # Store key in st.session_state.openai_api_key
-    st.session_state.openai_api_key = st.session_state.openai_key_input
+    # Store key in st.session_state
+    st.session_state.openai_api_key = api_key
+    st.session_state.openai_base_url = base_url
+
+    if st.button("Test Connection"):
+        from model_utils import get_openai_client, get_available_models
+        try:
+            client = get_openai_client()
+            models = get_available_models(client)
+            if models:
+                st.success("✅ Connection successful!")
+                st.session_state.available_models = models
+                if "selected_model" not in st.session_state or st.session_state.selected_model not in models:
+                    st.session_state.selected_model = models[0]
+            else:
+                st.error("❌ Connected, but no models found. Check LM Studio.")
+                st.session_state.available_models = []
+        except Exception as e:
+            st.error(f"❌ Connection failed: {e}")
+            st.session_state.available_models = []
+
+    if "available_models" in st.session_state and st.session_state.available_models:
+        st.selectbox(
+            "Select Model:", 
+            st.session_state.available_models, 
+            key="selected_model"
+        )
 
     # Logout button
     st.markdown("---")
