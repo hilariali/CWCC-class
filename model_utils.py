@@ -6,6 +6,7 @@ def get_openai_client() -> openai.OpenAI:
     Get the configured OpenAI-compatible client dynamically.
     First checks st.session_state (runtime updates), then falls back to st.secrets.
     """
+    import logging
     api_key = st.session_state.get("openai_api_key")
     if not api_key:
         api_key = st.secrets.get("OPENAI_API_KEY", "lm-studio")
@@ -14,6 +15,7 @@ def get_openai_client() -> openai.OpenAI:
     if not base_url:
         base_url = st.secrets.get("OPENAI_BASE_URL")
         
+    print(f"DEBUG: get_openai_client: base_url={base_url}, api_key_length={len(api_key) if api_key else 0}", flush=True)
     return openai.OpenAI(
         api_key=api_key,
         base_url=base_url
@@ -42,7 +44,7 @@ def get_available_models(client=None) -> list[str]:
         logging.error(f"Error listing models: {e}")
         return []
 
-def get_default_model(client=None, fallback="meta-llama/Llama-3.3-70B-Instruct") -> str:
+def get_default_model(client=None, fallback="qwen/qwen3-8b") -> str:
     """
     Get the first available model from the endpoint, or fallback to the provided name.
     """
@@ -50,6 +52,9 @@ def get_default_model(client=None, fallback="meta-llama/Llama-3.3-70B-Instruct")
         return st.session_state.selected_model
         
     secret_model = st.secrets.get("DEFAULT_MODEL")
+    if not secret_model:
+        secret_model = st.secrets.get("general", {}).get("DEFAULT_MODEL")
+        
     if secret_model:
         return secret_model
         

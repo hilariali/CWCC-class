@@ -102,7 +102,7 @@ with st.sidebar:
                     for m in models:
                         try:
                             payload = {"model": m, "messages": [{"role": "user", "content": "1"}], "max_tokens": 1}
-                            r = requests.post(f"{st.session_state.openai_base_url}/chat/completions", headers=headers, json=payload, timeout=2.5)
+                            r = requests.post(f"{st.session_state.openai_base_url}/chat/completions", headers=headers, json=payload, timeout=15.0)
                             if r.status_code == 200:
                                 loaded_models.append(m)
                         except Exception:
